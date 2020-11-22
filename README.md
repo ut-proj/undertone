@@ -1,14 +1,13 @@
 # undertone
 
-[![Build Status][travis badge]][travis]
-[![LFE Versions][lfe badge]][lfe]
-[![Erlang Versions][erlang badge]][versions]
-[![Tag][github tag badge]][github tag]
-[![Downloads][hex downloads]][hex package]
+[![Build Status][gh-actions-badge]][gh-actions]
+[![LFE Versions][lfe-badge]][lfe]
+[![Erlang Versions][erlang-badge]][versions]
+[![Tag][github-tag-badge]][github-tag]
 
 [![Project Logo][logo]][logo-large]
 
-*SuperCollider support in LFE*
+*SuperCollider and OSC support in LFE*
 
 ##### Table of Contents
 
@@ -58,23 +57,19 @@ Apache License, Version 2.0
 
 Copyright © 2020, Duncan McGreggor <oubiwann@gmail.com>.
 
-<!-- Named page links below: /-->
 
-[logo]: https://avatars1.githubusercontent.com/u/3434967?s=250
-[logo-large]: https://avatars1.githubusercontent.com/u/3434967
-[github]: https://github.com/ORG/undertone
-[gitlab]: https://gitlab.com/ORG/undertone
-[travis]: https://travis-ci.org/ORG/undertone
-[travis badge]: https://img.shields.io/travis/ORG/undertone.svg
-[gh-actions-badge]: https://github.com/ORG/undertone/workflows/Go/badge.svg
-[gh-actions]: https://github.com/ORG/undertone/actions
+[//]: ---Named-Links---
+
+[logo]: priv/images/logo-v1.png
+[logo-large]: priv/images/logo-v1-large.png
+[github]: https://github.com/lfex/undertone
+[gh-actions-badge]: https://github.com/lfex/undertone/workflows/ci%2Fcd/badge.svg
+[gh-actions]: https://github.com/lfex/undertone/actions
 [lfe]: https://github.com/rvirding/lfe
-[lfe badge]: https://img.shields.io/badge/lfe-1.3.0-blue.svg
-[erlang badge]: https://img.shields.io/badge/erlang-19%20to%2023-blue.svg
-[versions]: https://github.com/ORG/undertone/blob/master/.travis.yml
-[github tags]: https://github.com/ORG/undertone/tags
-[github tags badge]: https://img.shields.io/github/tag/ORG/undertone.svg
-[github downloads]: https://img.shields.io/github/downloads/ORG/undertone/total.svg
-[hex badge]: https://img.shields.io/hexpm/v/undertone.svg?maxAge=2592000
-[hex package]: https://hex.pm/packages/undertone
-[hex downloads]: https://img.shields.io/hexpm/dt/undertone.svg
+[lfe-badge]: https://img.shields.io/badge/lfe-2.0-blue.svg
+[erlang-badge]: https://img.shields.io/badge/erlang-19%20to%2023-blue.svg
+[versions]: https://github.com/lfex/undertone/blob/master/.github/workflows/cicd.yml
+[github-tag]: https://github.com/lfex/undertone/tags
+[github-tag-badge]: https://img.shields.io/github/tag/lfex/undertone.svg
+[github-downloads]: https://img.shields.io/github/downloads/lfex/undertone/total.svg
+
