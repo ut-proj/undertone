@@ -1,6 +1,6 @@
 {application, 'undertone',
- [{description, "SuperCollider support in LFE"},
-  {vsn, git},
+ [{description, "SuperCollider and OSC support in LFE"},
+  {vsn, "0.1.0-dev"},
   {registered, []},
   {mod, {'undertone.app', []}},
   {applications,
@@ -9,7 +9,6 @@
    ]},
   {env,[]},
   {modules, []},
-
   {licenses, ["Apache 2.0"]},
   {links, []}
  ]}.
