@@ -37,7 +37,7 @@ $ rebar3 lfe repl
 ## Tests [&#x219F;](#table-of-contents)
 
 ```shell
-$ rebar3 lfe test
+$ rebar3 as test check
 ```
 
 ## Usage [&#x219F;](#table-of-contents)
