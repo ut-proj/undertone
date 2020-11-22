@@ -28,13 +28,13 @@ TBD
 $ rebar3 lfe compile
 ```
 
-# Start the Project REPL [&#x219F;](#table-of-contents)
+## Start the Project REPL [&#x219F;](#table-of-contents)
 
 ```shell
 $ rebar3 lfe repl
 ```
 
-# Tests [&#x219F;](#table-of-contents)
+## Tests [&#x219F;](#table-of-contents)
 
 ```shell
 $ rebar3 lfe test
