@@ -25,13 +25,13 @@ TBD
 ## Build [&#x219F;](#table-of-contents)
 
 ```shell
-$ rebar3 lfe compile
+$ rebar3 compile
 ```
 
 ## Start the Project REPL [&#x219F;](#table-of-contents)
 
 ```shell
-$ rebar3 lfe repl
+$ rebar3 repl
 ```
 
 ## Tests [&#x219F;](#table-of-contents)
@@ -42,13 +42,35 @@ $ rebar3 as test check
 
 ## Usage [&#x219F;](#table-of-contents)
 
-Start the REPL, per the above:
+For the examples below, start the REPL per the above.
+
+### Connecting to the Erlang OSC Server
 
 ``` lisp
-lfe> (application:start 'undertone)
+lfe> (set c (undertone.osc.client:connect "localhost" 2357))
+; ok#(client #Pid<0.276.0> #Pid<0.277.0>)
+lfe> (undertone.osc.client:echo c)
+; ok
+```
+
+If you view the output of the running Erlang OSC server, you should see some
+debug output logged:
+
+```
+=INFO REPORT==== 27-Nov-2020::16:14:05.986773 ===
+Received message: []
+```
+
+You can also check passed arguements:
+
+``` lisp
+lfe> (undertone.osc.client:echo c '(a list of args))
 ok
-lfe> (undertone.server:echo "this is a test")
-"this is a test"
+```
+
+```
+=INFO REPORT==== 27-Nov-2020::16:35:28.652299 ===
+Received message: [a,list,'of',args]
 ```
 
 ## License [&#x219F;](#table-of-contents)
