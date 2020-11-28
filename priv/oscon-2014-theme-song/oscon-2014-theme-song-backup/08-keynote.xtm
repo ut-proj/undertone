@@ -1,0 +1,87 @@
+;;;; This is a slightly modiifed version of code for the OSCON Keynote
+;;;; which Andrew Sorenson performed live in Portland Oregon in July, 2014.
+;;;;
+;;;; Some of the differences include:
+;;;;  * Free samples were used instead of the cuomst samples that Andrew uses
+;;;;  * Note definitions are used instead of numbers
+;;;;  * The sustain of the piano notes was increased
+;;;;  * Some of the relative volumes were changed.
+;;;;
+;;;; The original is preserved in the history of this gist, which was forked
+;;;; from Andrew's gist.
+;;;;
+;;;; Final note: thank you so much, Andrew, for the inspiring performance
+;;;; you gave to OSCON; it was an absolute delight to finally be able to
+;;;; attend one of your live performances!
+;;;;
+(define root E3)
+(define scale (pc:scale 4 'aeolian))
+
+;; (define left-hand-notes-1 (list E2 D2 C2 G2))
+;; (define left-hand-notes-2 (list G3 G3 A3 B3))
+
+;; (define left-hand-notes-1 (list E3 D3 C3 G3))
+(define left-hand-notes-1 (list E3 D3 C3))
+;; (define left-hand-notes-1 (list E4 D4 C4))
+(define left-hand-notes-2 (list G4 G4 A4 B4))
+
+;; (define left-hand-notes-1 (list E4 D4 C4 G4))
+;; (define left-hand-notes-2 (list G5 G5 A5 B5))
+
+;; (define left-hand-notes-1 (list E5 D5 C5 G5))
+;; (define left-hand-notes-2 (list G6 G6 A6 B6))
+
+(define left-hand)
+
+(define left-hand
+  (lambda (beat ps ds)
+    (if (= 0 (modulo beat 8))
+        (set! root (random (remove root left-hand-notes-1))))
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (play 1/2 piano root 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(left-hand (*metro* 'get-beat 4) left-hand-notes-2 (list 1))
+
+(define right-hand)
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root 24) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 160 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) .6)
+        (play fmsynth
+              (pc:quantize (+ 7 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 60 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+(right-hand (*metro* 'get-beat 4) 1/4)
+
+(define bassline
+  (lambda (beat ps ds)
+    (play fmsynth root 110 (* (car ps) (car ds)) 1.0 0.5)
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'bassline (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(bassline (*metro* 'get-beat 4) (list .25 .25 .6) '(3/2 1 3/2))
+
+(define kick
+  (lambda (beat dur)
+    (play drums 35 150 dur)
+    (play -1/4 drums 35 130 (* .5 dur))
+    (callback (*metro* (+ beat (* .5 dur))) 'kick (+ beat dur) dur)))
+
+(kick (*metro* 'get-beat 4) 1)
+
+(define hats
+  (lambda (beat dur)
+    (play drums (random '(44 42)) (cosr 80 60 (random '(7/3 5/2))) dur)
+    (callback (*metro* (+ beat (* .5 dur))) 'hats (+ beat dur) dur)))
+
+(hats (*metro* 'get-beat 4) 1/4)

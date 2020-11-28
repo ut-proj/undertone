@@ -1,0 +1,164 @@
+;;;; 04 left
+(define root E3)
+(define scale (pc:scale 4 'aeolian))
+
+(define left-hand-notes-1 (list C3 G3))
+(define left-hand-notes-2 (list G4 G4 A4 B4))
+
+;; start with this
+(define left-hand
+  (lambda (beat ps ds)
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(left-hand (*metro* 'get-beat 4) left-hand-notes-2 (list 1))
+
+;; after a bit, switch to this
+(define left-hand
+  (lambda (beat ps ds)
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (play 1/2 piano root 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+;; don't wait too long to execute the next bit
+(define left-hand
+  (lambda (beat ps ds)
+    (if (= 0 (modulo beat 8))
+        (set! root (random (remove root left-hand-notes-1))))
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (play 1/2 piano root 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(define left-hand-notes-1 (list E3 D3 C3))
+
+
+
+
+
+
+;;;; 05 right-and-baseline
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 160 20 7/3)
+          (* 4.0 dur))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+(right-hand (*metro* 'get-beat 4) 1/4)
+
+(define bassline
+  (lambda (beat ps ds)
+    (play fmsynth root 100 (* (car ps) (car ds)) 1.0 0.5)
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'bassline (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(bassline (*metro* 'get-beat 4) (list .25 .25 .6) '(3/2 1 3/2))
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 160 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) .6)
+        (play fmsynth
+              (pc:quantize (+ 7 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 75 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+
+
+
+
+
+;;;; 06 drums
+(define kick
+  (lambda (beat dur)
+    (play drums 35 150 dur)
+    (callback (*metro* (+ beat (* .5 dur))) 'kick (+ beat dur) dur)))
+
+(kick (*metro* 'get-beat 4) 1)
+
+(define kick
+  (lambda (beat dur)
+    (play drums 35 150 dur)
+    (play -1/4 drums 35 130 (* .5 dur))
+    (callback (*metro* (+ beat (* .5 dur))) 'kick (+ beat dur) dur)))
+
+
+
+(define hats
+  (lambda (beat dur)
+    (play drums (random '(44 42)) (cosr 80 60 (random '(7/3 5/2))) dur)
+    (callback (*metro* (+ beat (* .5 dur))) 'hats (+ beat dur) dur)))
+
+(hats (*metro* 'get-beat 4) 1/4)
+
+
+
+
+
+
+;;;; 07 climax ... and fade
+(define left-hand-notes-1 (list E3 D3 C3 G3))
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 170 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) 0)
+        (play fmsynth
+              (pc:quantize (+ 12 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 60 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+;; bring volume of sparkles up to 70 then 80
+
+(define left-hand-notes-1 (list C3 G3))
+
+(define left-hand-notes-1 (list E3 D3 C3 G3))
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 170 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) .6)
+        (play fmsynth
+              (pc:quantize (+ 7 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 80 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+;; bring volume of sparkles down to 70 then 60
+
+(define left-hand-notes-1 (list C3 G3))
+
+;; now bring down the piano volume of 160 by increments to 10
+
+(define right-hand)
+
+(define kick)
+
+(define bassline)
+
+(define hats)
+(define left-hand
+  (lambda (beat ps ds)
+    (if (= 0 (modulo beat 8))
+        (set! root (random (remove root left-hand-notes-1))))
+    (play piano (car ps) 170 24.0)
+    (play piano root 170 24.0)))

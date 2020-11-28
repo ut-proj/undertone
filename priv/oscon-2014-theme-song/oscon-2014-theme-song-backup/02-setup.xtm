@@ -1,0 +1,87 @@
+;;;; Much of the content in this file is taken from various Extempore
+;;;; blog posts by Ben Swift which are indexed here:
+;;;;   http://benswift.me/extempore-docs/index.html
+;;;;
+
+;;; Load the needed libraries -- this will take several minutes
+;;;
+(sys:load "libs/core/instruments.xtm")
+(sys:load "libs/core/pc_ivl.xtm")
+(sys:load "libs/external/instruments_ext.xtm")
+
+;;; Set up the constants we're going to need
+;;;
+(define sample-path "/Users/oubiwann/Downloads/8b4404e538e61c7996a5/")
+(define drum-path (string-append sample-path "salamander/OH/"))
+(define piano-regex "^.*([ABCDEFG][#b]?[0-9])v([0-9]+)\.wav$")
+
+;;; Add the samplers/instruments we're going to need to the dsp output
+;;; callback
+;;;
+(define-sampler drums sampler_note_hermite_c sampler_fx)
+(define-sampler piano sampler_note_hermite_c sampler_fx)
+
+(bind-func dsp:DSP
+  (lambda (in time chan dat)
+    (cond ((< chan 2.0)
+           (+ (drums in time chan dat)
+              (piano in time chan dat)
+              (fmsynth in time chan dat)))
+          (else 0.0))))
+
+(dsp:set! dsp)
+
+;;; Set up drum samples
+;;;
+(define add-drum-sample
+  (lambda (file-name const-name)
+    (set-sampler-index drums
+                       (string-append drum-path file-name)
+                       const-name
+                       0 0 0 1)))
+
+(define drum-sample-data
+  (list
+    (list "kick_OH_F_9.wav" *gm-kick*)
+    (list "hihatClosed_OH_F_20.wav" *gm-closed-hi-hat*)
+    (list "hihatFoot_OH_MP_12.wav" *gm-pedal-hi-hat*)
+    (list "hihatOpen_OH_FF_6.wav" *gm-open-hi-hat*)))
+
+(define add-drum-samples
+  (lambda (data)
+    (map (lambda (sample-pair)
+           (add-drum-sample (car sample-pair) (cadr sample-pair)))
+         data)))
+
+(add-drum-samples drum-sample-data)
+
+;;; Set up piano samples
+;;;
+(define parse-salamander-piano
+  (lambda (file-list)
+    (map (lambda (fname)
+           (let ((result (regex:matched fname piano-regex)))
+             (if (null? result)
+                 #f
+                 ;; load 4th velocity layer only
+                 (if (= (string->number (caddr result)) 4)
+                     (list fname
+                           (note-name-to-midi-number (cadr result))
+                           0
+                           0)
+                     #f))))
+         file-list)))
+
+(load-sampler
+  piano
+  ;; Can't use a variable here; need the actual path string
+  "/Users/oubiwann/Downloads/8b4404e538e61c7996a5/salamander/SalamanderGrandPianoV3_44.1khz16bit/44.1khz16bit"
+  ;; 'sound bank' index
+  0
+  parse-salamander-piano)
+
+;; Now that everything is loaded, try out some notes ...
+(play-note (now) drums *gm-kick* 180 44100)
+(play-note (now) drums *gm-open-hi-hat* 140 44100)
+(play-note (now) piano 24 180 44100)
+(play-note (now) fmsynth (random 60 80) 100 (* 1.0 *second*))
