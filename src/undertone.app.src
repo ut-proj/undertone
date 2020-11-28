@@ -1,5 +1,5 @@
 {application, 'undertone',
- [{description, "SuperCollider and OSC support in LFE"},
+ [{description, "Experimenting with OSC, the SuperCollider synth server, and more in LFE"},
   {vsn, "0.2.0-dev"},
   {registered, []},
   {mod, {'undertone.app', []}},
