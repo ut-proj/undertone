@@ -1,0 +1,14 @@
+;; Quick sanity check:
+(println "Hello, World!")
+
+(bind-func sine:DSP
+  (lambda (in time chan dat)
+    (* .1 (cos (* (convert time) .04)))))
+
+;; tell Extempore to use `sine` as the audio output sink
+(dsp:set! sine)
+
+;; Turn it off:
+(bind-func sine:DSP
+  (lambda (in time chan dat)
+    0.0))
