@@ -1,0 +1,37 @@
+(define root E3)
+(define scale (pc:scale 4 'aeolian))
+
+(define left-hand-notes-1 (list C3 G3))
+(define left-hand-notes-2 (list G4 G4 A4 B4))
+
+;; start with this
+(define left-hand
+  (lambda (beat ps ds)
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(left-hand (*metro* 'get-beat 4) left-hand-notes-2 (list 1))
+
+;; after a bit, switch to this
+(define left-hand
+  (lambda (beat ps ds)
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (play 1/2 piano root 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+;; don't wait too long to execute the next bit
+(define left-hand
+  (lambda (beat ps ds)
+    (if (= 0 (modulo beat 8))
+        (set! root (random (remove root left-hand-notes-1))))
+    (play piano (car ps) 170 (* 2.0 (car ds)))
+    (play 1/2 piano root 170 (* 2.0 (car ds)))
+    (callback (*metro* (+ beat (* .95 (car ds)))) 'left-hand (+ beat (car ds))
+              (rotate ps -1)
+              (rotate ds -1))))
+
+(define left-hand-notes-1 (list E3 D3 C3))
