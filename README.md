@@ -7,7 +7,7 @@
 
 [![Project Logo][logo]][logo-large]
 
-*SuperCollider and OSC support in LFE*
+*Experimenting with OSC, the SuperCollider synth server, and more in LFE*
 
 ##### Table of Contents
 
