@@ -7,7 +7,7 @@
 
 [![Project Logo][logo]][logo-large]
 
-*Experimenting with OSC, the SuperCollider synth server, and more in LFE*
+*Experimenting with Extempore, OSC, and SuperCollider in LFE/OTP*
 
 ##### Table of Contents
 
@@ -20,6 +20,7 @@
   * [Connecting to SuperCollider](#connecting-to-supercollider-)
   * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
   * [Working with Ardour](#workingwith-ardour-)
+  * [Working with Extempore](#working-with-extempore-)
 * [Documentation](#documentation-)
 * [License](#license-)
 
@@ -51,6 +52,8 @@ For the examples below, start the REPL per the above.
 
 ### Connecting to the Erlang OSC Server [&#x219F;](#table-of-contents)
 
+Tested against `erlsci/osc` `2.0` and `2.1`.
+
 ``` lisp
 lfe> (set c (undertone.osc.client:connect "localhost" 2357))
 ; ok#(client #Pid<0.276.0> #Pid<0.277.0>)
@@ -79,6 +82,8 @@ Received message: [a,list,'of',args]
 ```
 
 ### Connecting to SuperCollider [&#x219F;](#table-of-contents)
+
+Tested against SuperCollider `3.11.2`.
 
 Start up the SuperCollider GUI / IDE, then in the editor enter the following:
 
@@ -118,6 +123,8 @@ lfe> (undertone.sc.client:status c)
 ```
 
 ### Playing Sounds in SuperCollider [&#x219F;](#table-of-contents)
+
+Tested against SuperCollider `3.11.2`.
 
 First create a handful of instances of the default synth and then stop them,
 until we're ready:
@@ -177,16 +184,13 @@ lfe> (undertone.ardour.client:strip-list c)
 ; #(record-enabled? 0))
 ```
 
-Scratch-pad:
+### Working with Extempore [&#x219F;](#table-of-contents)
 
-``` lisp
-(set c (undertone.ardour.client:connect "localhost" 3819))
-(include-lib "include/client.lfe")
-(set pid (client-pid c))
-(osc_client:call_msg pid "/select/plugin" '(1 1))
+Tested against `extempore` `0.8.7`.
 
-
-```
+Download the latest Extempore from the
+[project releases](https://github.com/digego/extempore/releases)
+page on Github.
 
 ## Documentation [&#x219F;](#table-of-contents)
 
