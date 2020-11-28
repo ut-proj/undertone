@@ -1,0 +1,53 @@
+(define left-hand-notes-1 (list E3 D3 C3 G3))
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 170 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) 0)
+        (play fmsynth
+              (pc:quantize (+ 12 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 60 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+;; bring volume of sparkles up to 70 then 80
+
+(define left-hand-notes-1 (list C3 G3))
+
+(define left-hand-notes-1 (list E3 D3 C3 G3))
+
+(define right-hand
+  (lambda (beat dur)
+    (play piano
+          (pc:quantize (cosr (+ root C2) (cosr 5 3 1/2) 7/3) scale)
+          (cosr 170 20 7/3)
+          (* 4.0 dur))
+    (if (> (random) .6)
+        (play fmsynth
+              (pc:quantize (+ 7 (cosr (+ root 36) (cosr 5 3 1/2) 7/3)) scale)
+              (cosr 80 20 7/3)
+              (* .2 dur) 0.5 5.0))
+    (callback (*metro* (+ beat (* .5 dur))) 'right-hand (+ beat dur) dur)))
+
+;; bring volume of sparkles down to 70 then 60
+
+(define left-hand-notes-1 (list C3 G3))
+
+;; now bring down the piano volume of 160 by increments to 10
+
+(define right-hand)
+
+(define kick)
+
+(define bassline)
+
+(define hats)
+(define left-hand
+  (lambda (beat ps ds)
+    (if (= 0 (modulo beat 8))
+        (set! root (random (remove root left-hand-notes-1))))
+    (play piano (car ps) 170 24.0)
+    (play piano root 170 24.0)))

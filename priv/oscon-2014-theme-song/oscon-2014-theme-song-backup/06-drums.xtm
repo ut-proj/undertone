@@ -1,0 +1,19 @@
+(define kick
+  (lambda (beat dur)
+    (play drums 35 150 dur)
+    (callback (*metro* (+ beat (* .5 dur))) 'kick (+ beat dur) dur)))
+
+(kick (*metro* 'get-beat 4) 1)
+
+(define kick
+  (lambda (beat dur)
+    (play drums 35 150 dur)
+    (play -1/4 drums 35 130 (* .5 dur))
+    (callback (*metro* (+ beat (* .5 dur))) 'kick (+ beat dur) dur)))
+
+(define hats
+  (lambda (beat dur)
+    (play drums (random '(44 42)) (cosr 80 60 (random '(7/3 5/2))) dur)
+    (callback (*metro* (+ beat (* .5 dur))) 'hats (+ beat dur) dur)))
+
+(hats (*metro* 'get-beat 4) 1/4)
