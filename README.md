@@ -73,6 +73,84 @@ ok
 Received message: [a,list,'of',args]
 ```
 
+### Connecting to SuperCollider
+
+Start up the SuperCollider GUI / IDE, then in the editor enter the following:
+
+```
+s.options.maxLogins = 8;
+s.reboot;
+Server.default.options.asOptionsString
+```
+
+The last line will help you confirm the current settings, showing what they
+would be if you'd started `scsynth` manually. In particular, you want to confirm
+that you see `-l 8`.
+
+Then, in a terminal at the LFE REPL:
+
+``` lisp
+lfe> (set c (undertone.sc.client:connect "localhost" 57110))
+#(client #Pid<0.344.0> #Pid<0.345.0>)
+```
+
+Once the client is set up, do a quick check to see that you are connected to the
+right server / version and that there are synthesizer definitions loaded:
+
+``` lisp
+lfe> (undertone.sc.client:version c)
+(#(version "3.11.2") #(branch "HEAD") #(commit-id "9a34118e"))
+
+lfe> (undertone.sc.client:status c)
+(#(unit-generators 0)
+ #(synths 0)
+ #(gruops 9)
+ #(loaded-synth-definitions 106)
+ #(cpu-average-usage 0.030904095619916916)
+ #(cpu-peak-usage 0.2695612609386444)
+ #(nominal-sample-rate 4.41e4)
+ #(actual-sample-rate 44099.98856935304))
+```
+
+### Playing Sounds in SuperCollider
+
+First create a handful of instances of the default synth and then stop them,
+until we're ready:
+
+``` lisp
+lfe> (set synth-ids '(1000 1001 1002 1003 1004))
+"ϨϩϪϫϬ"
+lfe> (set (list s0 s1 s2 s3 s4) (list-comp
+       ((<- id synth-ids))
+       (undertone.sc.client:create-synth c id)))
+"ϨϩϪϫϬ"
+lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:stop-node c id))
+(ok ok ok ok ok)
+```
+
+Instead of a boring C chord, let's take some notes from the C scale's Locrian
+mode using `B`, `E`, `F`, `A`, and `B` (a combination _rarely_ heard!):
+
+``` lisp
+lfe> (include-lib "include/notes.lfe")
+|-- loaded include: notes --|
+(undertone.sc.client:set-node c s0 `("freq" ,(B3) out 0))
+(undertone.sc.client:set-node c s1 `("freq" ,(E3) out 1))
+(undertone.sc.client:set-node c s2 `("freq" ,(F3) out 0))
+(undertone.sc.client:set-node c s3 `("freq" ,(A3) out 0))
+(undertone.sc.client:set-node c s4 `("freq" ,(B4) out 1))
+```
+
+For the MIDI-minded, there is also an include file with functions defined for
+getting notes by MIDI number.
+
+And then, when you're done listening to that beautiful dissonance:
+
+``` lisp
+lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:start-node c id))
+(ok ok ok ok ok)
+```
+
 ## License [&#x219F;](#table-of-contents)
 
 Apache License, Version 2.0
@@ -94,4 +172,3 @@ Copyright © 2020, Duncan McGreggor <oubiwann@gmail.com>.
 [github-tag]: https://github.com/lfex/undertone/tags
 [github-tag-badge]: https://img.shields.io/github/tag/lfex/undertone.svg
 [github-downloads]: https://img.shields.io/github/downloads/lfex/undertone/total.svg
-
