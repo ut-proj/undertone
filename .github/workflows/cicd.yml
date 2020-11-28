@@ -30,8 +30,8 @@ jobs:
       run: DEBUG=1 rebar3 --version
     - name: Compile
       run: rebar3 compile
-    - name: Xref Checks
-      run: rebar3 xref
+#    - name: Xref Checks
+#      run: rebar3 xref
 #    - name: Dialyzer
 #      run: rebar3 dialyzer
     - name: Run Tests
