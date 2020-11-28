@@ -16,6 +16,9 @@
 * [Start the Project REPL](#start-the-repl-)
 * [Tests](#tests-)
 * [Usage](#usage-)
+  * [Connecting to the Erlang OSC Server](#connecting-to-the-erlang-osc-server-)
+  * [Connecting to SuperCollider](#connecting-to-supercollider-)
+  * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
 * [License](#license-)
 
 ## About [&#x219F;](#table-of-contents)
@@ -44,7 +47,7 @@ $ rebar3 as test check
 
 For the examples below, start the REPL per the above.
 
-### Connecting to the Erlang OSC Server
+### Connecting to the Erlang OSC Server [&#x219F;](#table-of-contents)
 
 ``` lisp
 lfe> (set c (undertone.osc.client:connect "localhost" 2357))
@@ -73,7 +76,7 @@ ok
 Received message: [a,list,'of',args]
 ```
 
-### Connecting to SuperCollider
+### Connecting to SuperCollider [&#x219F;](#table-of-contents)
 
 Start up the SuperCollider GUI / IDE, then in the editor enter the following:
 
@@ -112,7 +115,7 @@ lfe> (undertone.sc.client:status c)
 ; #(actual-sample-rate 44099.98856935304))
 ```
 
-### Playing Sounds in SuperCollider
+### Playing Sounds in SuperCollider [&#x219F;](#table-of-contents)
 
 First create a handful of instances of the default synth and then stop them,
 until we're ready:
