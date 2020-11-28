@@ -1,0 +1,15 @@
+;; need to load this first, but only once
+(sys:load "examples/sharedsystem/audiosetup.xtm")
+
+;; after executing the line above in Extempore, be sure to switch to the Ext.
+;; terminal to monitor the progress as it will take a while to load and compile
+;; everything
+
+;; then, this will trigger an 8-note "ascending scale" loop starting at middle C
+(:> ascending-scale 4 0 (play syn1 @1 80 dur) (scale 4 8))
+
+;; change the tempo:
+(*metro* 'set-tempo 72)
+
+;; stop the scale:
+(:| ascending-scale 4 0 (play syn1 @1 80 dur) (scale 4 8))
