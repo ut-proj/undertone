@@ -40,9 +40,9 @@
 
 (defun echo
   (((match-client pid p))
-   (osc_client:send_msg p "/debug/log_message")))
+   (osc_client:cast_msg p "/debug/log_message")))
 
 (defun echo
   (((match-client pid p) args)
-   (osc_client:send_msg p "/debug/log_message" args)))
+   (osc_client:cast_msg p "/debug/log_message" args)))
 
