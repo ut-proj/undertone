@@ -41,7 +41,7 @@
 ;;; Common Functions
 
 (defun conns (_)
-   (client-conns))
+  (client-conns))
 
 (defun ping (client)
   (client-ping client))
