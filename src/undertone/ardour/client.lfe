@@ -10,7 +10,10 @@
    (conns 1)
    (ping 1))
   ;; impl-specific
-  )
+  (export
+   (strip-list 1)
+   (strip-plugin-list 2)
+   (strip-plugin-desc 3)))
 
 (include-lib "include/client.lfe")
 
@@ -36,13 +39,38 @@
 ;;; Common Functions
 
 (defun conns (_)
-   (client-conns))
+  (client-conns))
 
 (defun ping (client)
   (client-ping client))
 
 ;;; Implementation-specific Functions
 
+(defun strip-list
+  "Ask for a list of strips.
+
+  XXX - Due to a current limitation of the UDP client, the full list of strips
+        is not obtained, and neither is the final message."
+  (((match-client pid p))
+   (let ((result (osc_client:call_msg p "/strip/list")))
+     (format-msg (erlang:setelement 2 result "/strip/list")))))
+
+(defun strip-plugin-list
+  "Ask for a list of a strip's plugins.
+
+  XXX - Due to a current limitation of the UDP client, the full list of plugins
+        is not obtained."
+  (((match-client pid p) strip-id)
+   (format-msg (osc_client:call_msg p "/strip/plugin/list" `(,strip-id)))))
+
+(defun strip-plugin-desc
+  "Ask for a list of a plug-in's parameters.
+
+  XXX - Due to a current limitation of the UDP client, the full list of plugin
+        parameters is not obtained."
+  (((match-client pid p) strip-id plugin-id)
+   (format-msg (osc_client:call_msg p "/strip/plugin/descriptor"
+                                    `(,strip-id ,plugin-id)))))
 
 ;;; Private Functions
 
@@ -51,22 +79,40 @@
     ('off 0)
     ('on 1)))
 
+(defun strip-type-name (abbrv)
+  (case abbrv
+    ("AT" "audio track")
+    ("MT" "MIDI track")
+    ("B" "audio bus")
+    ("MB" "MIDI bus")
+    ("FB" "foldback bus")
+    ("V" "VCA")))
+
 (defun format-msg
-  ((`#(message "/version.reply" (,_name ,maj ,min ,micro ,branch ,commit)))
-   `(#(version ,(lists:flatten (io_lib:format "~p.~p~s" `(,maj ,min ,micro))))
-     #(branch ,branch)
-     #(commit-id ,commit)))
-  ((`#(message "/status.reply" (,_ ,ug ,s ,g ,lsd ,cau ,cpu ,nsr ,asr)))
-   `(#(unit-generators ,ug)
-     #(synths ,s)
-     #(gruops ,g)
-     #(loaded-synth-definitions ,lsd)
-     #(cpu-average-usage ,cau)
-     #(cpu-peak-usage ,cpu)
-     #(nominal-sample-rate ,nsr)
-     #(actual-sample-rate ,asr)))
-  ((`#(message "/synced" ,_))
-   'ok)
-  ((`#(message "/done" ("/notify" ,id ,ml)))
-   `(#(client-id ,id)
-     #(max-logins ,ml))))
+  (((= `#(error ,_) err))
+   err)
+  ((`#(,_ "/strip/list" (,st ,sn ,si ,so ,m ,s ,sid ,re)))
+   `(#(strip-id ,sid)
+     #(name ,sn)
+     #(type ,(strip-type-name st))
+     #(inputs ,si)
+     #(outputs ,so)
+     #(muted? ,m)
+     #(soloed? ,s)
+     #(record-enabled? ,re)))
+  ((`#(,_ "/strip/plugin/list" (,sid ,pid ,pn ,_unknown)))
+   `(#(strip-id ,sid)
+     #(plugin-id ,pid)
+     #(name ,pn)))
+  ((`#(,_ "/strip/plugin/descriptor" (,sid ,pid ,parid ,parn ,bs ,dt ,min ,max ,_ ,_ ,cv)))
+   ;; XXX Note that the documentation of the third and second to last args seem
+   ;;     to be swapped, but since I'm not sure, I'm just leaving those out.
+   `(#(strip-id ,sid)
+     #(plugin-id ,pid)
+     #(parameter (#(id ,parid)
+                  #(name ,parn)
+                  #(flags-bitset ,bs)
+                  #(data-type ,dt)
+                  #(min ,min)
+                  #(max ,max)
+                  #(current-value ,cv))))))
