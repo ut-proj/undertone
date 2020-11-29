@@ -1,3 +1,6 @@
+;;;; The intent for this module is that it be a low-level, very thin wrapper
+;;;; around `osc_client` and that there will be a higher-level API at a
+;;;; later point in time at `undertone.sc`.
 (defmodule undertone.sc.client
   ;; constructors
   (export
@@ -39,13 +42,10 @@
   (connect host (default-port)))
 
 (defun connect (host port)
-  (application:ensure_started 'osc_lib)
-  (connect host port (application:get_env 'osc_lib 'udp_opts '())))
+  (new-connection host port))
 
 (defun connect (host port udp-opts)
-  (let ((`#(ok ,sup) (osc_client:start))
-        (`#(ok ,pid) (osc_client:connect host port udp-opts)))
-    (make-client sup sup pid pid)))
+  (new-connection host port udp-opts))
 
 ;;; Common Functions
 
