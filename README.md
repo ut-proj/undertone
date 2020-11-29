@@ -19,6 +19,7 @@
   * [Connecting to the Erlang OSC Server](#connecting-to-the-erlang-osc-server-)
   * [Connecting to SuperCollider](#connecting-to-supercollider-)
   * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
+  * [Working with Ardour](#workingwith-ardour-)
 * [Documentation](#documentation-)
 * [License](#license-)
 
@@ -158,6 +159,33 @@ And then, when you're done listening to that beautiful dissonance:
 ``` lisp
 lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:start-node c id))
 ;(ok ok ok ok ok)
+```
+
+### Working with Ardour [&#x219F;](#table-of-contents)
+
+``` lisp
+lfe> (set c (undertone.ardour.client:connect "localhost" 3819))
+;#(client #Pid<0.281.0> #Pid<0.282.0>)
+lfe> (undertone.ardour.client:strip-list c)
+;(#(name "SynthMaster One")
+; #(strip-number 1)
+; #(type "MIDI track")
+; #(inputs 0)
+; #(outputs 2)
+; #(muted? 0)
+; #(soloed? 0)
+; #(record-enabled? 0))
+```
+
+Scratch-pad:
+
+``` lisp
+(set c (undertone.ardour.client:connect "localhost" 3819))
+(include-lib "include/client.lfe")
+(set pid (client-pid c))
+(osc_client:call_msg pid "/select/plugin" '(1 1))
+
+
 ```
 
 ## Documentation [&#x219F;](#table-of-contents)
