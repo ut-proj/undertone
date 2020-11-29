@@ -1,12 +1,16 @@
 ;;;; This is not a general-purpose OSC client, but rather an LFE client for
 ;;;; the Erlang OSC server (default implementation).
 ;;;;
+;;;; The intent for this module is that it be a low-level, very thin wrapper
+;;;; around `osc_client` and that there will be a higher-level API at a
+;;;; later point in time at `undertone.osc`.
+;;;;
 ;;;; A general-purpose OSC client is available here:
 ;;;; * https://github.com/erlsci/osc/tree/release/2.1.x/src
 (defmodule undertone.osc.client
   ;; constructors
   (export
-   (connect 2) (connect 3))
+   (connect 0) (connect 1) (connect 2) (connect 3))
   ;; common
   (export 
    (conns 1)
@@ -17,16 +21,22 @@
 
 (include-lib "include/client.lfe")
 
-;;; Constructor
+(defun default-host () "127.0.0.1")
+(defun default-port () 2357)
+
+;;; Constructors
+
+(defun connect ()
+  (connect (default-host)))
+
+(defun connect (host)
+  (connect host (default-port)))
 
 (defun connect (host port)
-  (application:ensure_started 'osc_lib)
-  (connect host port (application:get_env 'osc_lib 'udp_opts '())))
+  (new-connection host port))
 
 (defun connect (host port udp-opts)
-  (let ((`#(ok ,sup) (osc_client:start))
-        (`#(ok ,pid) (osc_client:connect host port udp-opts)))
-    (make-client sup sup pid pid)))
+  (new-connection host port udp-opts))
 
 ;;; Common Functions
 
