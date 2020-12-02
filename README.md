@@ -15,10 +15,11 @@
 * [Build](#build-)
 * [Start the Project REPL](#start-the-repl-)
 * [Tests](#tests-)
-* [Usage](#usage-)
+* [Usage Overview](#usage-overview-)
   * [Connecting to the Erlang OSC Server](#connecting-to-the-erlang-osc-server-)
   * [Connecting to SuperCollider](#connecting-to-supercollider-)
   * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
+* [Documentation](#documentation-)
 * [License](#license-)
 
 ## About [&#x219F;](#table-of-contents)
@@ -158,6 +159,11 @@ And then, when you're done listening to that beautiful dissonance:
 lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:start-node c id))
 ;(ok ok ok ok ok)
 ```
+
+## Documentation [&#x219F;](#table-of-contents)
+
+There is an early-stage [documentation effort](https://github.com/cnbbooks/lfe-music-programming)
+for this project, with draft content published [here](https://cnbbooks.github.io/lfe-music-programming/current/).
 
 ## License [&#x219F;](#table-of-contents)
 
