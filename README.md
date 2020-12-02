@@ -12,46 +12,51 @@
 ##### Table of Contents
 
 * [About](#about-)
-* [Build](#build-)
-* [Start the Project REPL](#start-the-repl-)
-* [Tests](#tests-)
+* [Build and Test](#build-and-test-)
 * [Usage Overview](#usage-overview-)
-  * [Connecting to the Erlang OSC Server](#connecting-to-the-erlang-osc-server-)
-  * [Connecting to SuperCollider](#connecting-to-supercollider-)
-  * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
-  * [Working with Ardour](#workingwith-ardour-)
-  * [Playing Sounds in SuperCollider](#playing-sounds-in-supercollider-)
   * [Working with Extempore](#working-with-extempore-)
+  * [Open Sound Control](#osc-)
+     * [The Erlang Server](#connecting-to-the-erlang-osc-server-)
+     * [SuperCollider](#supercollider-)
+     * [Ardour](#ardour-)
 * [Documentation](#documentation-)
 * [License](#license-)
 
 ## About [&#x219F;](#table-of-contents)
 
-TBD
+This is a project for making music in LFE, with support for MIDI, audio
+processing, Open Sound Control, and more. The `undertone` project relies
+heavily upon the phenomenal work of [Andrew Sorensen](https://github.com/digego)
+et al in the [Extempore project](https://github.com/digego/extempore),
+essentially having the aim of providing an LFE DSL for BEAM-native, distributed
+interaction with Extempore.
 
-## Build [&#x219F;](#table-of-contents)
+## Build and Test [&#x219F;](#table-of-contents)
 
 ```shell
 $ rebar3 compile
-```
-
-## Start the Project REPL [&#x219F;](#table-of-contents)
-
-```shell
-$ rebar3 repl
-```
-
-## Tests [&#x219F;](#table-of-contents)
-
-```shell
 $ rebar3 as test check
 ```
 
 ## Usage [&#x219F;](#table-of-contents)
 
-For the examples below, start the REPL per the above.
+For the examples below, start the REPL:
 
-### Connecting to the Erlang OSC Server [&#x219F;](#table-of-contents)
+```shell
+$ rebar3 repl
+```
+
+### Working with Extempore [&#x219F;](#table-of-contents)
+
+Tested against `extempore` `0.8.7`.
+
+Download the latest Extempore from the
+[project releases](https://github.com/digego/extempore/releases)
+page on Github.
+
+### OSC [&#x219F;](#table-of-contents)
+
+#### The Erlang Server [&#x219F;](#table-of-contents)
 
 Tested against `erlsci/osc` `2.0` and `2.1`.
 
@@ -82,9 +87,11 @@ ok
 Received message: [a,list,'of',args]
 ```
 
-### Connecting to SuperCollider [&#x219F;](#table-of-contents)
+#### SuperCollider [&#x219F;](#table-of-contents)
 
 Tested against SuperCollider `3.11.2`.
+
+##### Connecting
 
 Start up the SuperCollider GUI / IDE, then in the editor enter the following:
 
@@ -123,7 +130,7 @@ lfe> (undertone.sc.client:status c)
 ; #(actual-sample-rate 44099.98856935304))
 ```
 
-### Playing Sounds in SuperCollider [&#x219F;](#table-of-contents)
+##### Playing Sounds
 
 Tested against SuperCollider `3.11.2`.
 
@@ -169,7 +176,7 @@ lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:start-node c id))
 ;(ok ok ok ok ok)
 ```
 
-### Working with Ardour [&#x219F;](#table-of-contents)
+#### Ardour [&#x219F;](#table-of-contents)
 
 ``` lisp
 lfe> (set c (undertone.ardour.client:connect "localhost" 3819))
@@ -184,14 +191,6 @@ lfe> (undertone.ardour.client:strip-list c)
 ; #(soloed? 0)
 ; #(record-enabled? 0))
 ```
-
-### Working with Extempore [&#x219F;](#table-of-contents)
-
-Tested against `extempore` `0.8.7`.
-
-Download the latest Extempore from the
-[project releases](https://github.com/digego/extempore/releases)
-page on Github.
 
 ## Documentation [&#x219F;](#table-of-contents)
 
