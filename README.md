@@ -7,7 +7,7 @@
 
 [![Project Logo][logo]][logo-large]
 
-*Experimenting with Extempore, OSC, and SuperCollider in LFE/OTP*
+*Making Music with Extempore, OSC, and SuperCollider in LFE/OTP*
 
 ##### Table of Contents
 
@@ -20,6 +20,7 @@
   * [Connecting to SuperCollider](#connecting-to-supercollider-)
   * [Playing Sounds in SuperCollider](#-playing-sounds-in-supercollider)
   * [Working with Ardour](#workingwith-ardour-)
+  * [Playing Sounds in SuperCollider](#playing-sounds-in-supercollider-)
   * [Working with Extempore](#working-with-extempore-)
 * [Documentation](#documentation-)
 * [License](#license-)
