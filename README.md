@@ -16,7 +16,7 @@
 * [Usage Overview](#usage-overview-)
   * [Working with Extempore](#working-with-extempore-)
   * [Open Sound Control](#osc-)
-     * [The Erlang Server](#connecting-to-the-erlang-osc-server-)
+     * [The Erlang Server](#the-erlang-server-)
      * [SuperCollider](#supercollider-)
      * [Ardour](#ardour-)
 * [Documentation](#documentation-)
@@ -38,7 +38,7 @@ $ rebar3 compile
 $ rebar3 as test check
 ```
 
-## Usage [&#x219F;](#table-of-contents)
+## Usage Overview [&#x219F;](#table-of-contents)
 
 For the examples below, start the REPL:
 
@@ -91,7 +91,7 @@ Received message: [a,list,'of',args]
 
 Tested against SuperCollider `3.11.2`.
 
-##### Connecting
+#### Connecting
 
 Start up the SuperCollider GUI / IDE, then in the editor enter the following:
 
@@ -130,9 +130,7 @@ lfe> (undertone.sc.client:status c)
 ; #(actual-sample-rate 44099.98856935304))
 ```
 
-##### Playing Sounds
-
-Tested against SuperCollider `3.11.2`.
+#### Playing Sounds
 
 First create a handful of instances of the default synth and then stop them,
 until we're ready:
