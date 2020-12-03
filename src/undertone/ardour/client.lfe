@@ -11,15 +11,20 @@
    (ping 1))
   ;; impl-specific
   (export
-   (strip-list 1)
-   (strip-plugin-list 2)
-   (strip-plugin-desc 3)))
+   (deselect-strip 2)
+   (goto-end 1)
+   (goto-start 1)
+   (list-strips 1)
+   (list-strip-plugins 2)
+   (mute-monitor 1)
+   (select-strip 2)
+   (strip-plugin-desc 3)
+   (unmute-monitor 1)))
 
 (include-lib "include/client.lfe")
 
 (defun default-host () "127.0.0.1")
 (defun default-port () 3819)
-
 (defun root-node-id () 0)
 
 ;;; Constructors
@@ -46,7 +51,22 @@
 
 ;;; Implementation-specific Functions
 
-(defun strip-list
+(defun deselect-strip
+  "Deselect the given strip."
+  (((match-client pid p) strip-id)
+   (osc_client:cast_msg p "/strip/select" `(,strip-id 0))))
+
+(defun goto-end
+  "Move playhead to end of session."
+  (((match-client pid p))
+   (osc_client:cast_msg p "/goto_end")))
+
+(defun goto-start
+  "Move playhead to start of session."
+  (((match-client pid p))
+   (osc_client:cast_msg p "/goto_start")))
+
+(defun list-strips
   "Ask for a list of strips.
 
   XXX - Due to a current limitation of the UDP client, the full list of strips
@@ -55,13 +75,22 @@
    (let ((result (osc_client:call_msg p "/strip/list")))
      (format-msg (erlang:setelement 2 result "/strip/list")))))
 
-(defun strip-plugin-list
+(defun list-strip-plugins
   "Ask for a list of a strip's plugins.
 
   XXX - Due to a current limitation of the UDP client, the full list of plugins
         is not obtained."
   (((match-client pid p) strip-id)
    (format-msg (osc_client:call_msg p "/strip/plugin/list" `(,strip-id)))))
+
+(defun mute-monitor
+  (((match-client pid p))
+   (osc_client:cast_msg p "/monitor/mute" '(1))))
+
+(defun select-strip
+  "Select the given strip."
+  (((match-client pid p) strip-id)
+   (osc_client:cast_msg p "/strip/select" `(,strip-id 1))))
 
 (defun strip-plugin-desc
   "Ask for a list of a plug-in's parameters.
@@ -71,6 +100,10 @@
   (((match-client pid p) strip-id plugin-id)
    (format-msg (osc_client:call_msg p "/strip/plugin/descriptor"
                                     `(,strip-id ,plugin-id)))))
+
+(defun unmute-monitor
+  (((match-client pid p))
+   (osc_client:cast_msg p "/monitor/mute" '(0))))
 
 ;;; Private Functions
 
