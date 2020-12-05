@@ -1,0 +1,52 @@
+(sys:load "libs/external/portmidi.xtm")
+(pm_initialize)
+(pm_print_devices)
+
+(define *mout* (pm_create_output_stream 3))
+
+;; define the music
+;;
+;; this is based upon the last chord sequence covered by Paul Davids in this
+;; video:
+;; * https://www.youtube.com/watch?v=K_T-jYyQCbQ
+;;
+;; The chord seqence on guitar:
+;; * F#m Add 9/11 (2 measures)
+;; * E Add 9      (1 measure)
+;; * B Add 11/D#  (1 measure)
+;; * F#m Add 9/11 (2 measures)
+;; * A Add 9      (1 measure)
+;; * E Maj 7/G#   (1 measure)
+;;
+;; Those give the following notes played for each:
+;; * F# C# F# A  B  G#
+;; * E  B  F# G# B  E
+;; *    D# B  D# F# E
+;; * F# C# F# A  B  G#
+;; *    A  E  B  C# E
+;; * G#    E  B  D# E
+
+(sys:load "libs/core/pattern-language.xtm")
+ 
+(define midi-loop
+  (lambda (beat dur)
+    (mplay *mout*
+           ;(random (list f#2 c#3 f#3 a3  b3 g#4))
+           ;(random (list e3  b4  f#4 g#4 b4 e4 ))
+           ;(random (list d#3 b3  d#4 f#4 e4    ))
+           ;(random (list f#2 c#3 f#3 a3  b3 g#4))
+           ;(random (list a3  e4  b4  c#5 e4    ))
+           ;(random (list g#2 e3  b3  d#4 e4    ))
+           (random 60 80)
+           dur 0)
+    (callback (*metro* (+ beat (* .5 dur))) 'midi-loop (+ beat dur) dur)))
+
+;; start
+;(midi-loop (*metro* 'get-beat 4) 1/4)
+;(midi-loop (*metro* 'get-beat 4) 1/2)
+;(midi-loop (*metro* 'get-beat 4) 1)
+(midi-loop (*metro* 'get-beat 4) 2)
+
+;; stop
+(define midi-loop
+  (lambda (beat dur) #t))
