@@ -13,3 +13,6 @@
 
 ;; stop the scale:
 (:| ascending-scale 4 0 (play syn1 @1 80 dur) (scale 4 8))
+
+;; Docs:
+;; * https://extemporelang.github.io/docs/guides/pattern-language/
