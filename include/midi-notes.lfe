@@ -179,3 +179,8 @@
 (defun	m1	()	8.66	)
 (defun	m1	()	8.66	)
 (defun	m0	()	8.18	)
+
+;; This function is for display purpses when used in the REPL
+;; and need to be the last function in the include file.
+(defun |-- loaded include: midi-notes --| ()
+  'ok)
