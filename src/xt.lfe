@@ -24,8 +24,8 @@
 
 (defun set-tempo! (bpm)
   (xt.msg:async
-   (xt.lang:sexp "*metro*" (++ "'set-tempo " (xt.lang:->type bpm)))))
+   (xt.lang:sexp "*metro*" (++ "'set-tempo " (xt.lang:->xt bpm)))))
 
 (defun sys-load (xtm-file)
   (xt.msg:sync
-   (xt.lang:sexp "sys:load" (xt.lang:->type xtm-file))))
+   (xt.lang:sexp "sys:load" (xt.lang:->xt xtm-file))))
