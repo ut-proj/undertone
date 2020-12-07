@@ -4,13 +4,15 @@
 ;;;; scheme language used by Extempore.
 (defmodule xt.lang
   (export
-   (->type 1)
-   (->types 1)
+   (->xt 1)
+   (->xts 1)
    (sexp 1) (sexp 2)
    (wrap-str 1)))
 
-(defun ->type (arg)
-  (cond ((io_lib:printable_latin1_list arg) (wrap-str arg))
+(defun ->xt (arg)
+  (cond ((== arg 'true) "#t")
+        ((== arg 'false) "#f")
+        ((io_lib:printable_latin1_list arg) (wrap-str arg))
         ((is_atom arg) (erlang:atom_to_list arg))
         ((is_integer arg) (erlang:integer_to_list arg))
         ((is_float arg) (io_lib:format "~.5f" `(,arg)))
@@ -18,10 +20,15 @@
         ;; symbol
         ('true arg)))
 
-(defun ->types (args)
+(defun ->xts (args)
   (string:join
-   (lists:map #'->type/1 args)
+   (lists:map #'->xt/1 args)
    " "))
+
+(defun ->lfe (arg)
+  (cond ((== arg "#t") 'true)
+        ((== arg "#f") 'false)
+        ))
 
 (defun sexp (fn-name)
   (++ "(" fn-name ")"))
