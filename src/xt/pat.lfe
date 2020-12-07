@@ -10,7 +10,7 @@
    (xt.lang:sexp
     ":>"
     (string:join
-     (list (xt.lang:->types `(,name ,length ,offset))
+     (list (xt.lang:->xts `(,name ,length ,offset))
            patt-expr
            patt-lists)
      " "))))
@@ -25,7 +25,7 @@
    (xt.lang:sexp
     ":|"
     (string:join
-     (list (xt.lang:->types `(,name ,length ,offset))
+     (list (xt.lang:->xts `(,name ,length ,offset))
            patt-expr
            patt-lists)
      " "))))

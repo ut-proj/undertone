@@ -6,8 +6,12 @@
 
 (defun play (inst pitch-var velocity duration)
   ""
-  (xt.lang:sexp "play" (xt.lang:->types `(,inst ,pitch-var ,velocity ,duration))))
+  (xt.lang:sexp
+   "play"
+   (xt.lang:->xts `(,inst ,pitch-var ,velocity ,duration))))
 
 (defun scale (octave-num note-count)
   ""
-  (xt.lang:sexp "scale" (xt.lang:->types `(,octave-num ,note-count))))
+  (xt.lang:sexp
+   "scale"
+   (xt.lang:->xts `(,octave-num ,note-count))))
