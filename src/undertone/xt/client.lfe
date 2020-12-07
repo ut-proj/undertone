@@ -24,3 +24,7 @@
       (msg (lfe_io:format "Got umknown response: ~p~n" `(,msg))))
     (gen_tcp:close sock)
     result))
+
+; application:start('tcp-mgr').
+; 'tcp-mgr':cast_msg(<<"(sys:load \"examples/sharedsystem/setup.xtm\")\r\n">>).
+; 'tcp-mgr':cast_msg(<<"(:> ascending-scale 4 0 (play syn1 @1 80 dur) (scale 4 8))\r\n">>).
