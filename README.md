@@ -31,6 +31,9 @@ et al in the [Extempore project](https://github.com/digego/extempore),
 essentially having the aim of providing an LFE DSL for BEAM-native, distributed
 interaction with Extempore.
 
+SuperCollider support is currently limited to basic OSC operations. Additional
+backends will be added or improved based upon time and interest. 
+
 ## Build and Test [&#x219F;](#table-of-contents)
 
 ```shell
@@ -48,7 +51,7 @@ $ rebar3 repl
 
 ### Working with Extempore [&#x219F;](#table-of-contents)
 
-Tested against `extempore` `0.8.7`.
+Tested against `extempore` version `0.8.7`.
 
 Download the latest Extempore from the
 [project releases](https://github.com/digego/extempore/releases)
@@ -81,13 +84,17 @@ Then change the tempo:
 (set-tempo! 72)
 ```
 
-You can stop the synth in two ways: changing 'play' form to the 'stop' form
+You can stop the synth in two ways -- changing 'play' form to the 'stop' form
 while keeping the remaining body the same (this is useful for live coding
-scenarios) or by calling the 'stop' form using just the pattern name you
+scenarios): 
+``` lisp
+(// 'ascending-scale 4 0 (play 'syn2 '@1 80 'dur) (scale 4 8))
+```
+
+or by calling the 'stop' form using just the pattern name you
 defined in the 'play' form:
 
 ``` lisp
-(// 'ascending-scale 4 0 (play 'syn1 '@1 80 'dur) (scale 4 8))
 (// 'ascending-scale)
 ```
 
