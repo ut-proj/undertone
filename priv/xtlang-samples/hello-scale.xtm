@@ -1,5 +1,5 @@
 ;; need to load this first, but only once
-(sys:load "examples/sharedsystem/audiosetup.xtm")
+(sys:load "examples/sharedsystem/setup.xtm")
 
 ;; after executing the line above in Extempore, be sure to switch to the Ext.
 ;; terminal to monitor the progress as it will take a while to load and compile
