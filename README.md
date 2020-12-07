@@ -54,6 +54,43 @@ Download the latest Extempore from the
 [project releases](https://github.com/digego/extempore/releases)
 page on Github.
 
+Assuming you've started `extempore` and have the LFE REPL running, as above,
+connect to the Extempore TCP server
+
+``` lisp
+(xt:connect)
+```
+
+Load the appropriate Extempore files into the server and the LFE macros into the
+current REPL session:
+
+``` lisp
+(xt:sys-load "examples/sharedsystem/setup.xtm")
+(include-lib "undertone/include/xtl-patterns.lfe")
+```
+
+Play an ascending scale using the second synthesizer that comes with Extempore:
+
+``` lisp
+(/> 'ascending-scale 4 0 (play 'syn2 '@1 80 'dur) (scale 4 8))
+```
+
+Then change the tempo:
+
+``` lisp
+(set-tempo! 72)
+```
+
+You can stop the synth in two ways: changing 'play' form to the 'stop' form
+while keeping the remaining body the same (this is useful for live coding
+scenarios) or by calling the 'stop' form using just the pattern name you
+defined in the 'play' form:
+
+``` lisp
+(// 'ascending-scale 4 0 (play 'syn1 '@1 80 'dur) (scale 4 8))
+(// 'ascending-scale)
+```
+
 ### OSC [&#x219F;](#table-of-contents)
 
 #### The Erlang Server [&#x219F;](#table-of-contents)
