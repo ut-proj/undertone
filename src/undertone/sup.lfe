@@ -1,9 +1,8 @@
 (defmodule undertone.sup
-  (behaviour gen_server)
+  (behaviour supervisor)
   (export
     ;; supervisor implementation
     (start_link 0)
-    (stop 0)
     ;; callback implementation
     (init 1)))
 
@@ -27,16 +26,13 @@
                          (MODULE)
                          (supervisor-opts)))
 
-(defun stop ()
-  (gen_server:call (SERVER) 'stop))
-
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   callback implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (_args)
   `#(ok #(,(sup-flags)
-          ,(child 'undertone.server 'start_link '()))))
+          (,(child 'undertone.server 'start_link '())))))
 
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   private functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
