@@ -26,9 +26,19 @@
    " "))
 
 (defun ->lfe (arg)
-  (cond ((== arg "#t") 'true)
-        ((== arg "#f") 'false)
-        ))
+  (case arg
+   (#"#t" 'true)
+   (#"#f" 'false)
+   (#"NIL" 'nil)
+   (_ (cond ((?= `#(result true ,val) (coers:to_int arg))
+             val)
+            ((?= `#(result true ,val) (coers:to_float arg))
+             val)
+            ((?= `#(result true ,val) (coers:to_bool arg))
+             val)
+            ((?= `#(result true ,val) (coers:to_string arg))
+             val)
+            ('true arg)))))
 
 (defun sexp (fn-name)
   (++ "(" fn-name ")"))
@@ -42,3 +52,18 @@
 
 (defun wrap-str (arg)
   (++ "\"" arg "\""))
+
+(defun check-coersion
+  ((`#(result true ,val))
+   val)
+  ((`#(result false ,_))
+   'error))
+
+(defun ->float (arg)
+  (check-coersion (coers:to_float arg)))
+
+(defun ->int (arg)
+  (check-coersion (coers:to_int arg)))
+
+(defun ->string (arg)
+  (check-coersion (coers:to_string arg)))
