@@ -7,13 +7,13 @@
 
 (include-lib "logjam/include/logjam.hrl")
 
-(defun async (bin)
-  (log-debug "Casting ~p ... ~n" bin)
-  (tcp-client:cast-msg (payload bin)))
+(defun async (str)
+  (log-debug "Casting ~s ... ~n" `(,str))
+  (tcp-client:cast-msg (payload str)))
 
 (defun payload (str)
   (binary:list_to_bin (++ str "\r\n")))
 
-(defun sync (bin)
-  (log-debug "Calling ~p ... ~n" bin)
-  (tcp-client:call-msg (payload bin)))
+(defun sync (str)
+  (log-debug "Calling ~s ... ~n" `(,str))
+  (tcp-client:call-msg (payload str)))
