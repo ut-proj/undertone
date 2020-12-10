@@ -8,7 +8,7 @@
 (xt:sys-load "examples/sharedsystem/setup.xtm")
 
 ;; Pull in the LFE macros for Extempore's pattern language
-(include-lib "undertone/include/xtl-patterns.lfe")
+(include-lib "undertone/include/xt-patterns.lfe")
 
 ;; perform the 8-note "ascending scale" loop starting at middle C
 (/> 'ascending-scale 4 0 (play 'syn1 '@1 80 'dur) (scale 4 8))
