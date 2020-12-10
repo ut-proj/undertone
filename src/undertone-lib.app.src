@@ -10,6 +10,10 @@
     {env,[]},
     {modules, [
         'xt.backend',
+        'xt.common',
+        'xt.lang',
+        'xt.msg',
+        'xt.pat',
         'sc.backend',
         'ardour.client',
         'undertone.osc.client'

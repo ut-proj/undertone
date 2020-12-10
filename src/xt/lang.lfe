@@ -4,6 +4,7 @@
 ;;;; scheme language used by Extempore.
 (defmodule xt.lang
   (export
+   (->lfe 1)
    (->xt 1)
    (->xts 1)
    (sexp 1) (sexp 2)
