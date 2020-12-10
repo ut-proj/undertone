@@ -6,6 +6,8 @@
     ;; callback implementation
     (init 1)))
 
+(include-lib "logjam/include/logjam.hrl")
+
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   config functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,6 +24,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
+  (log-info "Starting children ...")
   (supervisor:start_link `#(local ,(SERVER))
                          (MODULE)
                          (supervisor-opts)))
@@ -31,6 +34,7 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (_args)
+  (log-info "Initializing children ...")
   `#(ok #(,(sup-flags)
           (,(child 'undertone.server 'start_link '())))))
 

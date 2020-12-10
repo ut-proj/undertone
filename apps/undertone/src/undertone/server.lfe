@@ -16,6 +16,8 @@
     (pid 0)
     (echo 1)))
 
+(include-lib "logjam/include/logjam.hrl")
+
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   config functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,6 +32,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
+  (log-info "Starting undertone state management server ...")
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)
@@ -62,7 +65,7 @@
   ((`#(EXIT ,_from normal) state)
    `#(noreply ,state))
   ((`#(EXIT ,pid ,reason) state)
-   (io:format "Process ~p exited! (Reason: ~p)~n" `(,pid ,reason))
+   (log-notice "Process ~p exited! (Reason: ~p)~n" `(,pid ,reason))
    `#(noreply ,state))
   ((_msg state)
    `#(noreply ,state)))
