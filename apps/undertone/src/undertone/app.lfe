@@ -24,7 +24,6 @@
   (undertone.sup:start_link))
 
 (defun stop ()
-  (undertone.sup:stop)
   'ok)
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
