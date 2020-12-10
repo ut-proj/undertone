@@ -1,6 +1,6 @@
 {application, 'undertone', [
     {description, "Making Music with Extempore, OSC, and SuperCollider in LFE/OTP"},
-    {vsn, "0.2.0"},
+    {vsn, "0.3.0-dev"},
     {registered, []},
     {mod, {application_starter, ['undertone.app', []]}},
     {applications, [
