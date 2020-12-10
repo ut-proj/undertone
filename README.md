@@ -71,7 +71,7 @@ current REPL session:
 
 ``` lisp
 (xt:sys-load "examples/sharedsystem/setup.xtm")
-(include-lib "undertone/include/xtl-patterns.lfe")
+(include-lib "undertone/include/xt-patterns.lfe")
 ```
 
 Play an ascending scale using the second synthesizer that comes with Extempore:
@@ -210,13 +210,20 @@ lfe> (sc.client:set-node c s4 `("freq" ,(B4) out 1))
 ;ok
 ```
 
-For the MIDI-minded, there is also an include file with functions defined for
-getting notes by MIDI number.
+Now play them all:
+
+``` lisp
+lfe> (list-comp ((<- id synth-ids)) (sc.client:start-node c id))
+;(ok ok ok ok ok)
+```
+
+For the MIDI-minded, in addition to the `notes.lfe` include, there is a
+`midi-notes.lfe` file with functions defined for getting notes by MIDI number.
 
 And then, when you're done listening to that beautiful dissonance:
 
 ``` lisp
-lfe> (list-comp ((<- id synth-ids)) (sc.client:start-node c id))
+lfe> (list-comp ((<- id synth-ids)) (sc.client:stop-node c id))
 ;(ok ok ok ok ok)
 ```
 
