@@ -1,9 +1,15 @@
 ;;;; Functions for sending messages to the Extempore TCP server.
 (defmodule xt.msg
+  ;; API
   (export
    (async 1)
+   (parse-response 2)
    (payload 1)
-   (sync 1)))
+   (report 1)
+   (sync 1))
+  ;; Utilities
+  (export
+   (split-xt-packet 1)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -27,14 +33,21 @@
 
 (defun parse-response
   ((packet `#(,reporter-mod ,reporter-func))
-   (let ((msgs (split-xt-packet packet)))
+   ;; If Erlang logging supported 'trace' we'd use that here, instead of
+   ;; commenting it out ...
+   ;;(log-debug "Got packet: ~p" `(,packet))
+   (let* ((raw-msgs (split-xt-packet packet))
+          (msgs (maybe-one-msg raw-msgs)))
      (list-comp
-       ((<- x msgs))
+       ((<- x raw-msgs))
        (apply reporter-mod reporter-func `(,x)))
+     (log-debug "Parsed packet: ~p" `(,msgs))
      msgs)))
 
-(defun reporter (_data)
-  ;; XXX once logging is working, add log msg here
+(defun report (data)
+  ;; If Erlang logging supported 'trace' we'd use that here, instead of
+  ;; commenting it out ...
+  ;;(log-debug "Got data from TCP server: ~p" `(,data))
   'ok)
 
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,5 +56,12 @@
 
 (defun split-xt-packet (packet)
   (list-comp
-    ((<- x (when (=/= x #b())) (binary:split packet (rcv-delim) '(global))))
+    ((<- x (when (=/= x #b()))
+         (binary:split packet (rcv-delim) '(global))))
     (xt.lang:->lfe x)))
+
+(defun maybe-one-msg
+  ((`(,msg . ()))
+    msg)
+   ((msgs)
+    msgs))

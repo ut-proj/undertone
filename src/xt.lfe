@@ -27,5 +27,7 @@
    (xt.lang:sexp "*metro*" (++ "'set-tempo " (xt.lang:->xt bpm)))))
 
 (defun sys-load (xtm-file)
-  (xt.msg:sync
-   (xt.lang:sexp "sys:load" (xt.lang:->xt xtm-file))))
+  (case (xt.msg:sync
+         (xt.lang:sexp "sys:load" (xt.lang:->xt xtm-file)))
+    ('true #(true loaded))
+    ('false #(false already-loaded))))
