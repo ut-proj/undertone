@@ -38,7 +38,8 @@ backends will be added or improved based upon time and interest.
 
 ```shell
 $ rebar3 compile
-$ rebar3 as test check
+$ rebar3 as test check # this step is optional
+$ rebar3 release
 ```
 
 ## Usage Overview [&#x219F;](#table-of-contents)
@@ -49,6 +50,10 @@ For the examples below, start the REPL:
 $ rebar3 repl
 ```
 
+Note that, while under active development, the undertone logging level will be
+set to `debug`. If that's too much for you, before you start the REPL edit the
+`./config/sys.config` file and change the logging level entries to `warning`.
+
 ### Working with Extempore [&#x219F;](#table-of-contents)
 
 Tested against `extempore` version `0.8.7`.
@@ -58,11 +63,8 @@ Download the latest Extempore from the
 page on Github.
 
 Assuming you've started `extempore` and have the LFE REPL running, as above,
-connect to the Extempore TCP server
-
-``` lisp
-(xt:connect)
-```
+you will have been automatically connected to the Extempore TCP server. As
+such, you're ready to start living coding!
 
 Load the appropriate Extempore files into the server and the LFE macros into the
 current REPL session:
@@ -152,7 +154,7 @@ that you see `-l 8`.
 Then, in a terminal at the LFE REPL:
 
 ``` lisp
-lfe> (set c (undertone.sc.client:connect "localhost" 57110))
+lfe> (set c (sc.client:connect "localhost" 57110))
 ;#(client #Pid<0.344.0> #Pid<0.345.0>)
 ```
 
@@ -160,10 +162,10 @@ Once the client is set up, do a quick check to see that you are connected to the
 right server / version and that there are synthesizer definitions loaded:
 
 ``` lisp
-lfe> (undertone.sc.client:version c)
+lfe> (sc.client:version c)
 ;(#(version "3.11.2") #(branch "HEAD") #(commit-id "9a34118e"))
 
-lfe> (undertone.sc.client:status c)
+lfe> (sc.client:status c)
 ;(#(unit-generators 0)
 ; #(synths 0)
 ; #(gruops 9)
@@ -184,9 +186,9 @@ lfe> (set synth-ids '(1000 1001 1002 1003 1004))
 ;"ϨϩϪϫϬ"
 lfe> (set (list s0 s1 s2 s3 s4) (list-comp
        ((<- id synth-ids))
-       (undertone.sc.client:create-synth c id)))
+       (sc.client:create-synth c id)))
 ;"ϨϩϪϫϬ"
-lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:stop-node c id))
+lfe> (list-comp ((<- id synth-ids)) (sc.client:stop-node c id))
 ;(ok ok ok ok ok)
 ```
 
@@ -196,15 +198,15 @@ mode using `B`, `E`, `F`, `A`, and `B` (a combination _rarely_ heard!):
 ``` lisp
 lfe> (include-lib "include/notes.lfe")
 ;|-- loaded include: notes --|
-lfe> (undertone.sc.client:set-node c s0 `("freq" ,(B3) out 0))
+lfe> (sc.client:set-node c s0 `("freq" ,(B3) out 0))
 ;ok
-lfe> (undertone.sc.client:set-node c s1 `("freq" ,(E3) out 1))
+lfe> (sc.client:set-node c s1 `("freq" ,(E3) out 1))
 ;ok
-lfe> (undertone.sc.client:set-node c s2 `("freq" ,(F3) out 0))
+lfe> (sc.client:set-node c s2 `("freq" ,(F3) out 0))
 ;ok
-lfe> (undertone.sc.client:set-node c s3 `("freq" ,(A3) out 0))
+lfe> (sc.client:set-node c s3 `("freq" ,(A3) out 0))
 ;ok
-lfe> (undertone.sc.client:set-node c s4 `("freq" ,(B4) out 1))
+lfe> (sc.client:set-node c s4 `("freq" ,(B4) out 1))
 ;ok
 ```
 
@@ -214,16 +216,16 @@ getting notes by MIDI number.
 And then, when you're done listening to that beautiful dissonance:
 
 ``` lisp
-lfe> (list-comp ((<- id synth-ids)) (undertone.sc.client:start-node c id))
+lfe> (list-comp ((<- id synth-ids)) (sc.client:start-node c id))
 ;(ok ok ok ok ok)
 ```
 
 #### Ardour [&#x219F;](#table-of-contents)
 
 ``` lisp
-lfe> (set c (undertone.ardour.client:connect "localhost" 3819))
+lfe> (set c (ardour.client:connect "localhost" 3819))
 ;#(client #Pid<0.281.0> #Pid<0.282.0>)
-lfe> (undertone.ardour.client:strip-list c)
+lfe> (ardour.client:strip-list c)
 ;(#(name "SynthMaster One")
 ; #(strip-number 1)
 ; #(type "MIDI track")

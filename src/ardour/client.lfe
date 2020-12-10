@@ -1,7 +1,7 @@
 ;;;; The intent for this module is that it be a low-level, very thin wrapper
 ;;;; around `osc_client` and that there will be a higher-level API at a
-;;;; later point in time at `undertone.ardour`.
-(defmodule undertone.ardour.client
+;;;; later point in time at `ardour`.
+(defmodule ardour.client
   ;; constructors
   (export
    (connect 0) (connect 1) (connect 2) (connect 3))

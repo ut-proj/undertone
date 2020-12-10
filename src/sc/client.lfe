@@ -1,7 +1,7 @@
 ;;;; The intent for this module is that it be a low-level, very thin wrapper
 ;;;; around `osc_client` and that there will be a higher-level API at a
-;;;; later point in time at `undertone.sc`.
-(defmodule undertone.sc.client
+;;;; later point in time at `sc`.
+(defmodule sc.client
   ;; constructors
   (export
    (connect 0) (connect 1) (connect 2) (connect 3))

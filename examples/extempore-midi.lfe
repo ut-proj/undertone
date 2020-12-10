@@ -1,8 +1,5 @@
 ;;;; MIDI example adapted from Ben Swift's Extempore example
 
-;; if you haven't connected to Extempore:
-(xt:connect)
-
 ;; need to load this first, but only once per running session of the Extempore
 ;; binary; note that it will take a while (~1 minute) and this call will block
 ;; until the load is finished
