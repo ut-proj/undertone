@@ -38,7 +38,7 @@ backends will be added or improved based upon time and interest.
 
 ```shell
 $ rebar3 compile
-$ rebar3 as test check # this step is optional
+$ rebar3 ltest # this step is optional
 $ rebar3 release
 ```
 
