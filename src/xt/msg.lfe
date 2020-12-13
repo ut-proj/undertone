@@ -31,23 +31,27 @@
 ;;;::=-   Callbacks for tcp-client library   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun handle-packet (parsed)
+  (case parsed
+    ("Welcome to extempore!" (progn
+                               (timer:sleep 500)
+                               (undertone.sysconfig:render-banner)))
+    (_ 'ok)))
+
 (defun parse-response
   ((packet `#(,reporter-mod ,reporter-func))
-   ;; If Erlang logging supported 'trace' we'd use that here, instead of
-   ;; commenting it out ...
-   ;;(log-debug "Got packet: ~p" `(,packet))
+   (log-debug "Got packet: ~p" `(,packet))
    (let* ((raw-msgs (split-xt-packet packet))
           (msgs (maybe-one-msg raw-msgs)))
      (list-comp
        ((<- x raw-msgs))
        (apply reporter-mod reporter-func `(,x)))
      (log-debug "Parsed packet: ~p" `(,msgs))
+     (handle-packet msgs)
      msgs)))
 
 (defun report (data)
-  ;; If Erlang logging supported 'trace' we'd use that here, instead of
-  ;; commenting it out ...
-  ;;(log-debug "Got data from TCP server: ~p" `(,data))
+  (log-debug "Got data from TCP server: ~p" `(,data))
   'ok)
 
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

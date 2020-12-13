@@ -68,14 +68,14 @@
     (start-backend-client type args cfg)))
 
 (defun start-backend-client 
-  ((_type _args (= `#m(has-client? ,has-client?) cfg)) (when (not has-client?))
+  ((_type _args `#m(has-client? ,has-client?)) (when (not has-client?))
    (log-info "there is no client for the given backend; skipping ...")
    'ok)
-  ((_type _args (= `#m(has-client? ,has-client?
-                       start-client? ,start?) cfg)) (when (not start?))
+  ((_type _args `#m(start-client? ,start?)) (when (not start?))
    (log-info "undertone is not configured to start a client for the given backend; skipping ...")
    'ok)
   ((_type _args (= `#m(name ,name host ,host port ,port) cfg))
+   (log-debug "Config for backend client: ~p" `(,cfg))
    (case name
      ;; XXX Fix this to use configured host and port
      ;('extempore (xt:connect host port))

@@ -10,11 +10,7 @@
    (sys-load 1)))
 
 ;; XXX These will eventually go into the module that's responsible for
-;;     Extempore session management. There's a pretty good chance that
-;;     this project will be run as an OTP release, possibly with different
-;;     relx profiles for different backends. If that's the case, then
-;;     configuration will be done via `./config/sys.config` and/or ENV
-;;     VARs.
+;;     Extempore session management.
 (defun connect ()
   (application:start 'tcp-client))
 
