@@ -1,4 +1,4 @@
-(defmodule undertone.repl.pure-xt
+(defmodule undertone.repl.extempore
   (export
    (loop 1)
    (print 1)
@@ -8,8 +8,10 @@
 
 (include-lib "logjam/include/logjam.hrl")
 
+(defun prompt () "extempore> ")
+
 (defun read ()
-  (let ((val (string:trim (io:get_line (undertone.sysconfig:prompt)))))
+  (let ((val (string:trim (io:get_line (prompt)))))
     (log-debug "Got user input: ~p" `(,val))
     val))
 
