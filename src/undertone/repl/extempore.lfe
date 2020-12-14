@@ -10,23 +10,36 @@
 
 (defun prompt () "extempore> ")
 
-(defun read ()
-  (let ((val (string:trim (io:get_line (prompt)))))
-    (log-debug "Got user input: ~p" `(,val))
-    val))
+;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   core repl functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun xt-eval (input)
-  (case input
-    ("" (read))
+(defun read ()
+  (let ((`#(ok ,sexpr) (lfe_io:read_line (prompt))))
+    (log-debug "Got user input (sexpr): ~p" `(,sexpr))
+    sexpr))
+
+(defun repl-eval (sexpr)
+  (case sexpr
     ('() (read))
-    ("quit" 'quit)
-    (_ (xt.msg:sync input))))
+    (`(exit . ,_) 'quit)
+    (`(h . ,_) 'help)
+    (`(help . ,_) 'help)
+    (`(quit . ,_) 'quit)
+    (`(v . ,_) 'version)
+    (`(version . ,_) 'version)
+    (_ (xt-eval sexpr))))
+
+(defun xt-eval (sexpr)
+  (let ((bitstring (list sexpr)))
+    (xt.msg:sync bitstring)))
 
 (defun print (result)
   (case result
-    ("quit" 'do-nothing)
-    ("" 'do-nothing)
-    ('() 'do-nothing)
+    ('quit 'ok)
+    ('help (help))
+    ('version (version))
+    ('() 'ok)
     (_ (lfe_io:format "~p~n" `(,result))))
   result)
 
@@ -34,7 +47,24 @@
   (('quit)
    'good-bye)
   ((code)
-   (loop (print (xt-eval (read))))))
+   (try
+     (loop (print (repl-eval (read))))
+     (catch
+       (`#(,err ,clause ,stack)
+        (io:format "~p: ~p~n" `(,err ,clause))
+        (io:format "Stacktrace: ~p~n" `(,stack))
+        (loop 'restart))))))
 
 (defun start ()
   (loop 'start))
+
+;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   shell functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun help ()
+  (lfe_io:format "~s" `(,(binary_to_list
+                           (undertone.sysconfig:read-priv
+                            "help/repl-extempore.txt")))))
+(defun version ()
+  (lfe_io:format "~p~n" `(,(undertone.sysconfig:versions))))

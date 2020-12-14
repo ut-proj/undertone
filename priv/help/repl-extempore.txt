@@ -1,0 +1,16 @@
+
+The Extempore undertone REPL
+
+Built-in functions:
+
+(exit)    -- alias for '(quit)'
+(h)       -- alias for '(help)'
+(help)    -- display this information
+(quit)    -- quit the Extempore REPL and return to the LFE REPL
+(version) -- display all the version info for undertone
+
+Extempore support:
+
+All S-expressions other than the ones listed above will be treated as Extempore
+Scheme / xtlang code and sent to the Extempore TCP server (compiler service).
+
