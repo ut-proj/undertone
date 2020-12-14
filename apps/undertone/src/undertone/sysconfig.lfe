@@ -9,7 +9,9 @@
    (backend-version 0)
    (banner-file 0)
    (banner 0)
+   (priv-file 1)
    (prompt 0)
+   (read-priv 1)
    (render-banner 0)
    (version 1)
    (version+name 1)
@@ -48,9 +50,7 @@
   (config 'banner))
 
 (defun banner ()
-  (let ((`#(ok ,data) (file:read_file
-                       (filename:join (code:priv_dir (APPKEY))
-                                      (banner-file)))))
+  (let ((data (read-priv (banner-file))))
     (clj:-> data
             (binary:replace #"{{VERSION}}"
                             (list_to_binary (version 'undertone)))
@@ -70,8 +70,17 @@
                      `(,key))
            cfg))))))
 
+(defun priv-file (priv-rel-path)
+  (filename:join (code:priv_dir (APPKEY))
+                 priv-rel-path))
+
 (defun prompt ()
   (config 'prompt))
+
+(defun read-priv (priv-rel-path)
+  (case (file:read_file (priv-file priv-rel-path))
+    (`#(ok ,data) data)
+    (other other)))
 
 (defun render-banner ()
   (io:format "~s" `(,(banner))))
