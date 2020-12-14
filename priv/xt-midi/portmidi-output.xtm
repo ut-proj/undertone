@@ -41,5 +41,5 @@
 (midi-loop (*metro* 'get-beat 4) 1/4)
 
 ;; stop the midi
-(define midi-loop
-  (lambda (beat dur) #t))
+;(define midi-loop
+;  (lambda (beat dur) #t))
