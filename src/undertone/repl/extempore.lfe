@@ -15,24 +15,24 @@
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun read ()
-  (let ((`#(ok ,sexpr) (lfe_io:read_line (prompt))))
-    (log-debug "Got user input (sexpr): ~p" `(,sexpr))
-    sexpr))
+  (let ((sexp (undertone.sexp:readlines (prompt))))
+    (log-debug "Got user input (sexp): ~p" `(,sexp))
+    sexp))
 
-(defun repl-eval (sexpr)
-  (case sexpr
+(defun repl-eval (sexp)
+  (case (mref sexp 'tokens)
     ('() (read))
-    (`(exit . ,_) 'quit)
-    (`(h . ,_) 'help)
-    (`(help . ,_) 'help)
-    (`(quit . ,_) 'quit)
-    (`(v . ,_) 'version)
-    (`(version . ,_) 'version)
-    (_ (xt-eval sexpr))))
+    (`("exit") 'quit)
+    ('("h") 'help)
+    ('("help") 'help)
+    ('("quit") 'quit)
+    (`("run" ,file) (run file))
+    ('("v") 'version)
+    ('("version") 'version)
+    (_ (xt-eval sexp))))
 
-(defun xt-eval (sexpr)
-  (let ((bitstring (list sexpr)))
-    (xt.msg:sync bitstring)))
+(defun xt-eval (sexp)
+  (xt.msg:async (mref sexp 'source)))
 
 (defun print (result)
   (case result
@@ -66,5 +66,9 @@
   (lfe_io:format "~s" `(,(binary_to_list
                            (undertone.sysconfig:read-priv
                             "help/repl-extempore.txt")))))
+(defun run (file-name)
+  (let ((`#(ok ,data) (file:read_file file-name)))
+    (xt.msg:sync (binary_to_list data))))
+
 (defun version ()
   (lfe_io:format "~p~n" `(,(undertone.sysconfig:versions))))

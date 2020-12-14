@@ -3,11 +3,12 @@ The Extempore undertone REPL
 
 Built-in functions:
 
-(exit)    -- alias for '(quit)'
-(h)       -- alias for '(help)'
-(help)    -- display this information
-(quit)    -- quit the Extempore REPL and return to the LFE REPL
-(version) -- display all the version info for undertone
+(exit)     -- alias for '(quit)'
+(h)        -- alias for '(help)'
+(help)     -- display this information
+(quit)     -- quit the Extempore REPL and return to the LFE REPL
+(run file) -- load the code in the given file and run in Extempore
+(version)  -- display all the version info for undertone
 
 Extempore support:
 
