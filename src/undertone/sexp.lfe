@@ -29,5 +29,5 @@
 (defun parse (lines)
   (let ((source (lists:flatten lines)))
     `#m(lines ,lines
-        source ,source
+        source ,(string:trim source)
         tokens ,(string:tokens source " ()#\n\""))))
