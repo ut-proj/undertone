@@ -22,6 +22,7 @@
 (defun repl-eval (sexp)
   (case (mref sexp 'tokens)
     ('() (read))
+    (`("call" . ,_) (xt-blocking-eval sexp))
     (`("exit") 'quit)
     ('("h") 'help)
     ('("help") 'help)
@@ -30,6 +31,19 @@
     ('("v") 'version)
     ('("version") 'version)
     (_ (xt-eval sexp))))
+
+(defun xt-blocking-eval (sexp)
+  "This is going to be ugly ... (for now/until we have real parsing)"
+  ;; 1. with the value associated with the 'source' key, replace initial
+  ;;    "(call" with ""
+  ;; 2. from the same, do a regex to replace the final ")" with ""
+  ;; 3. without any /real/ parsing, this should give us the body of the
+  ;;    Extempore code
+  ;; 4. send that to Extempore as a synchronous message
+  (let* ((source (string:trim (mref sexp 'source)))
+         (remove-call (re:replace source "^\\(call" "" '(#(return list))))
+         (extempore-form (re:replace remove-call "\\)$" "" '(#(return list)))))
+    (xt.msg:sync extempore-form)))
 
 (defun xt-eval (sexp)
   (xt.msg:async (mref sexp 'source)))

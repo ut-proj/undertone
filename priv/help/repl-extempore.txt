@@ -3,15 +3,20 @@ The Extempore undertone REPL
 
 Built-in functions:
 
-(exit)     -- alias for '(quit)'
-(h)        -- alias for '(help)'
-(help)     -- display this information
-(quit)     -- quit the Extempore REPL and return to the LFE REPL
-(run file) -- load the code in the given file and run in Extempore
-(version)  -- display all the version info for undertone
+(call body) -- make an explicitly blocking call to Extempore, with 'body' being
+               a valid Extempore expression
+(exit)      -- alias for '(quit)'
+(h)         -- alias for '(help)'
+(help)      -- display this information
+(quit)      -- quit the Extempore REPL and return to the LFE REPL
+(run file)  -- load the code in the given file and run in Extempore
+(version)   -- display all the version info for undertone
 
 Extempore support:
 
 All S-expressions other than the ones listed above will be treated as Extempore
-Scheme / xtlang code and sent to the Extempore TCP server (compiler service).
+Scheme / xtlang code and sent to the Extempore TCP server (compiler service) as
+an asynchronous call (no result, no output printed). If you would like to block
+on particular calls and see their return values, be sure to use the '(call ...)'
+REPL function.
 
