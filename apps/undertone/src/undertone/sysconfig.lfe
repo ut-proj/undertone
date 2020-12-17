@@ -49,15 +49,111 @@
 (defun banner-file ()
   (config 'banner))
 
+;Docs: \e[1;34mhttps://cnbbooks.github.io/lfe-music-programming/current/ \e[0m
+;File bug report: \e[1;34mhttps://github.com/lfex/undertone/issues/new \e[0m
+                   
 (defun banner ()
-  (let ((data (read-priv (banner-file))))
-    (clj:-> data
-            (binary:replace #"{{VERSION}}"
-                            (list_to_binary (version 'undertone)))
-            (binary:replace #"{{BACKEND}}"
-                            (list_to_binary (backend-display-version)))
-            (binary:replace #"{{PROMPT}}"
-                            (list_to_binary (prompt))))))
+  "Colour sequence:
+   - A series of blues for the mushroom and spores
+   - The yellow 'welcome'
+   - 3 clumps of grass
+   - Top of the 'd'
+   - 1 clump of grass
+   - Top of the 't'
+   - 3 clumps of grass
+   - Top row of 'undertone'
+  "
+  (let ((data (binary_to_list (read-priv (banner-file))))
+        (lcyan "\e[1;36m")
+        (cyan "\e[36m")
+        (lblue "\e[1;34m")
+        (blue "\e[34m")
+        (lyellow "\e[1;33m")
+        (yellow "\e[33m")
+        (magenta "\e[35m")
+        (lgreen "\e[1;32m")
+        (green "\e[32m")
+        (white "\e[1;37m")
+        (lgrey "\e[37m")
+        (grey "\e[1;30m")
+        (end "\e[0m"))
+    (io_lib:format data `(,lcyan ,end
+                          ,blue  ,end
+                          ,lcyan ,end
+                          
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          ,lblue ,end
+
+                          ,blue  ,end
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          
+                          ,blue  ,end
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end                          
+                          ,blue  ,end
+                          
+                          ,cyan    ,end
+                          ,blue    ,end
+                          ,magenta ,end
+
+                          ,cyan  ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,cyan   ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          
+                          ,white ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+
+                          ,white ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+
+                          ,white ,end
+                          ,lgrey ,end
+                          ,grey  ,end
+                          ,(++ lyellow (version 'undertone) end)
+                          ,(++ yellow (backend-display-version) end)
+                          ,(++ "Docs: "
+                               lblue
+                               "https://cnbbooks.github.io/lfe-music-programming/"
+                               end
+                               "\n"
+                               "Bug report: "
+                               lblue
+                               "https://github.com/lfex/undertone/issues/new"
+                               end)
+                          ,(prompt)))))
 
 (defun config (key)
   (let ((`#(ok ,cfg) (application:get_env (APPKEY) key)))
@@ -83,7 +179,7 @@
     (other other)))
 
 (defun render-banner ()
-  (io:format "~s" `(,(banner))))
+  (io:put_chars `(,(banner))))
 
 (defun version (app-name)
   (application:load app-name)

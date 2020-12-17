@@ -49,26 +49,7 @@ For the examples below, start the REPL:
 ```shell
 $ rebar3 repl
 ```
-```
-
-         .-***=~.
-       .'o  oOOOo`.
-      :~=~-.oOo   o`.
-       `. \ ~-.  oOOo.
-         `.; / ~.  OO:
-         .'  ;-- `.o.'
-        ,'  ; ~=--'~                       Weclome to
-        ;  ;
-_\|/_..\\;_\\//..__..\|/._____.__..\|/.__\/__v________
- .--.--.-----.--|  .-----.----|  |_.-----.-----.-----.
- |  |  |     |  _  |  -__|   _|   _|  _  |     |  -__|
- |_____|__|__|_____|_____|__| |____|_____|__|__|_____|
-
-Version: 0.3.0-dev
-Backend: Extempore 0.8.7
-
-lfe>
-```
+[![Banner Screenshot][banner-image]][banner-image]
 
 Note that, while under active development, the undertone logging level will be
 set to `debug`. If that's too much for you, before you start the REPL edit the
@@ -342,3 +323,4 @@ Copyright © 2020, Duncan McGreggor <oubiwann@gmail.com>.
 [github-tag]: https://github.com/lfex/undertone/tags
 [github-tag-badge]: https://img.shields.io/github/tag/lfex/undertone.svg
 [github-downloads]: https://img.shields.io/github/downloads/lfex/undertone/total.svg
+[banner-image]: priv/images/banner-screenshot.png
