@@ -49,6 +49,26 @@ For the examples below, start the REPL:
 ```shell
 $ rebar3 repl
 ```
+```
+
+         .-***=~.
+       .'o  oOOOo`.
+      :~=~-.oOo   o`.
+       `. \ ~-.  oOOo.
+         `.; / ~.  OO:
+         .'  ;-- `.o.'
+        ,'  ; ~=--'~                       Weclome to
+        ;  ;
+_\|/_..\\;_\\//..__..\|/._____.__..\|/.__\/__v________
+ .--.--.-----.--|  .-----.----|  |_.-----.-----.-----.
+ |  |  |     |  _  |  -__|   _|   _|  _  |     |  -__|
+ |_____|__|__|_____|_____|__| |____|_____|__|__|_____|
+
+Version: 0.3.0-dev
+Backend: Extempore 0.8.7
+
+lfe>
+```
 
 Note that, while under active development, the undertone logging level will be
 set to `debug`. If that's too much for you, before you start the REPL edit the
@@ -65,6 +85,16 @@ page on Github.
 Assuming you've started `extempore` and have the LFE REPL running, as above,
 you will have been automatically connected to the Extempore TCP server. As
 such, you're ready to start living coding!
+
+There are two ways to do this right now:
+
+1. from LFE (in LFE syntax), and
+1. within an LFE-managed REPL supporting native Extempore syntax
+
+#### From LFE
+
+Note that only a limited number of Exempore forms are supported from within LFE
+right now.
 
 Load the appropriate Extempore files into the server and the LFE macros into the
 current REPL session:
@@ -98,6 +128,47 @@ defined in the 'play' form:
 
 ``` lisp
 (// 'ascending-scale)
+```
+
+#### The Extempore REPL
+
+At the LFE prompt, start up the Extempore REPL:
+
+``` lisp
+lfe> (undertone.repl.extempore:start)
+extempore> 
+```
+
+Once at the `extempore>` prompt, you will be able to enter native Extempore
+expressions (Scheme and xtlang). These will be passed to the Extempore TCP
+server as-is (executed asynchronously and non-blocking).
+
+Additionally, you may call other supported functions. To see the list of
+supported REPL function, type `(help)`:
+
+``` lisp
+extempore> (help)
+
+The Extempore undertone REPL
+
+Built-in functions:
+
+(call body) -- make an explicitly blocking call to Extempore, with 'body' being
+               a valid Extempore expression
+(exit)      -- alias for '(quit)'
+(h)         -- alias for '(help)'
+(help)      -- display this information
+(quit)      -- quit the Extempore REPL and return to the LFE REPL
+(run file)  -- load the code in the given file and run in Extempore
+(version)   -- display all the version info for undertone
+
+Extempore support:
+
+All S-expressions other than the ones listed above will be treated as Extempore
+Scheme / xtlang code and sent to the Extempore TCP server (compiler service) as
+an asynchronous call (no result, no output printed). If you would like to block
+on particular calls and see their return values, be sure to use the '(call ...)'
+REPL function.
 ```
 
 ### OSC [&#x219F;](#table-of-contents)
