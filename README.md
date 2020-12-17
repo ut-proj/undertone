@@ -159,8 +159,10 @@ Built-in functions:
 (h)         -- alias for '(help)'
 (help)      -- display this information
 (quit)      -- quit the Extempore REPL and return to the LFE REPL
-(run file)  -- load the code in the given file and run in Extempore
-(version)   -- display all the version info for undertone
+(run file)  -- load the code in the given file and run in Extempore;
+               must be valid Extempore Scheme or xtlang code
+(version)   -- display all the version info for undertone; useful for
+               filing bug reports in tickets
 
 Extempore support:
 
