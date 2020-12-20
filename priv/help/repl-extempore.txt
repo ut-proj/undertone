@@ -10,6 +10,7 @@ Built-in functions:
 (help)      -- display this information
 (quit)      -- quit the Extempore REPL and return to the LFE REPL
 (run file)  -- load the code in the given file and run in Extempore
+(v)         -- alias for '(version')
 (version)   -- display all the version info for undertone
 
 Extempore support:
