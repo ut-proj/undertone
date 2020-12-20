@@ -21,13 +21,15 @@
 
 (defun repl-eval (sexp)
   (case (mref sexp 'tokens)
-    ('() (read))
+    ('() 'empty)
     (`("call" . ,_) (xt-blocking-eval sexp))
-    (`("exit") 'quit)
+    ('("eom") 'term)
+    ('("exit") 'quit)
     ('("h") 'help)
     ('("help") 'help)
     ('("quit") 'quit)
     (`("run" ,file) (run file))
+    ('("term") 'term)
     ('("v") 'version)
     ('("version") 'version)
     (_ (xt-eval sexp))))
@@ -50,17 +52,19 @@
 
 (defun print (result)
   (case result
-    ('quit 'ok)
-    ('help (help))
-    ('version (version))
     ('() 'ok)
+    ('empty 'ok)
+    ('help (help))
+    ('quit 'ok)
+    ('term (xt.msg:async ""))
+    ('version (version))
     (_ (lfe_io:format "~p~n" `(,result))))
   result)
 
 (defun loop
   (('quit)
    'good-bye)
-  ((code)
+  ((_)
    (try
      (loop (print (repl-eval (read))))
      (catch
