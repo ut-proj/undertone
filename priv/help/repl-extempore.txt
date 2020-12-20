@@ -5,12 +5,17 @@ Built-in functions:
 
 (call body) -- make an explicitly blocking call to Extempore, with 'body' being
                a valid Extempore expression
+(check-xt)  -- check on the status of Extempore (no response indicates a health
+               problem, possibly requiring a restart of the 'extempore' binary)
+(eom)       -- alias for '(term)'
 (exit)      -- alias for '(quit)'
 (h)         -- alias for '(help)'
 (help)      -- display this information
 (quit)      -- quit the Extempore REPL and return to the LFE REPL
 (run file)  -- load the code in the given file and run in Extempore
-(v)         -- alias for '(version')
+(term)      -- send message-terminating character sequence to force Extempore
+               end-of-message (useful when troubleshooting)
+(v)         -- alias for '(version)'
 (version)   -- display all the version info for undertone
 
 Extempore support:
