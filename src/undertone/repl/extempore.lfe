@@ -23,6 +23,7 @@
   (case (mref sexp 'tokens)
     ('() 'empty)
     (`("call" . ,_) (xt-blocking-eval sexp))
+    ('("check-xt") 'check-xt)
     ('("eom") 'term)
     ('("exit") 'quit)
     ('("h") 'help)
@@ -53,6 +54,7 @@
 (defun print (result)
   (case result
     ('() 'ok)
+    ('check-xt (check-extempore))
     ('empty 'ok)
     ('help (help))
     ('quit 'ok)
@@ -79,6 +81,9 @@
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   shell functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun check-extempore ()
+  (xt.msg:async "#(health ok)"))
 
 (defun help ()
   (lfe_io:format "~s" `(,(binary_to_list

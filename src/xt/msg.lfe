@@ -17,14 +17,14 @@
 (defun rcv-delim () #b(0))
 
 (defun async (str)
-  (log-debug "Casting ~s ..." `(,str))
+  (log-debug "Casting: ~s" `(,str))
   (tcp-client:cast-msg (payload str)))
 
 (defun payload (str)
   (binary:list_to_bin (++ str (xmit-delim))))
 
 (defun sync (str)
-  (log-debug "Calling ~s ..." `(,str))
+  (log-debug "Calling: ~s" `(,str))
   (tcp-client:call-msg (payload str)))
 
 ;;;;;::=------------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,7 +36,10 @@
     ("Welcome to extempore!" (progn
                                (timer:sleep 500)
                                (undertone.sysconfig:render-banner)))
-    (_ 'ok)))
+    ("#(health ok)" (log-notice "Extempore TCP server connection healthy"))
+    (_ (progn
+         (log-debug "No special packet handling for parsed value")
+         'ok))))
 
 (defun parse-response
   ((packet `#(,reporter-mod ,reporter-func))
