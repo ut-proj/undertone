@@ -31,8 +31,9 @@ et al in the [Extempore project](https://github.com/digego/extempore),
 essentially having the aim of providing an LFE DSL for BEAM-native, distributed
 interaction with Extempore.
 
-SuperCollider support is currently limited to basic OSC operations. Additional
-backends will be added or improved based upon time and interest. 
+SuperCollider support is currently limited to basic OSC operations. Features for
+that or orhter backends or additing new backends to undertone will be
+prioritised based upon time and interest.
 
 ## Build and Test [&#x219F;](#table-of-contents)
 
@@ -53,7 +54,8 @@ $ rebar3 repl
 
 Note that, while under active development, the undertone logging level will be
 set to `debug`. If that's too much for you, before you start the REPL edit the
-`./config/sys.config` file and change the logging level entries to `warning`.
+`./config/sys.config` file and change the logging level entries to `notice` or
+`warning`.
 
 ### Working with Extempore [&#x219F;](#table-of-contents)
 
@@ -90,6 +92,10 @@ Play an ascending scale using the second synthesizer that comes with Extempore:
 ``` lisp
 (/> 'ascending-scale 4 0 (play 'syn2 '@1 80 'dur) (scale 4 8))
 ```
+
+Note that the Extempore syntax for this is `:>`, a character combination not
+supported in LFE symbols, so `/>` was settled upon instead. Similarly, below you
+will see `//` used in LFE as an analog for the `:|` used in Extempore.
 
 Then change the tempo:
 
@@ -129,21 +135,26 @@ supported REPL function, type `(help)`:
 
 ``` lisp
 extempore> (help)
+```
 
+``` text
 The Extempore undertone REPL
 
 Built-in functions:
 
 (call body) -- make an explicitly blocking call to Extempore, with 'body' being
                a valid Extempore expression
+(check-xt)  -- check on the status of Extempore (no response indicates a health
+               problem, possibly requiring a restart of the 'extempore' binary)
+(eom)       -- alias for '(term)'
 (exit)      -- alias for '(quit)'
 (h)         -- alias for '(help)'
 (help)      -- display this information
 (quit)      -- quit the Extempore REPL and return to the LFE REPL
-(run file)  -- load the code in the given file and run in Extempore;
-               must be valid Extempore Scheme or xtlang code
-(version)   -- display all the version info for undertone; useful for
-               filing bug reports in tickets
+(run file)  -- load the code in the given file and run in Extempore
+(term)      -- send message-terminating character sequence to force Extempore
+               end-of-message (useful when troubleshooting)
+(version)   -- display all the version info for undertone
 
 Extempore support:
 
