@@ -13,9 +13,9 @@
   (let* ((line (io:get_line prompt))
          (lines (++ lines (list line)))
          (this-count (balance last-count line)))
-    (if (== 0 this-count)
-      (parse lines)
-      (readlines prompt this-count lines))))
+    (if (> this-count 0)
+      (readlines prompt this-count lines)
+      (parse lines))))
 
 (defun balance (last-count line)
   (lists:foldl (lambda (x acc)
