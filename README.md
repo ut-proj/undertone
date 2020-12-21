@@ -28,8 +28,8 @@ essentially having the aim of providing an LFE DSL for BEAM-native, distributed
 interaction with Extempore.
 
 SuperCollider support is currently limited to basic OSC operations. Features for
-that or orhter backends or additing new backends to undertone will be
-prioritised based upon time and interest.
+that or other backends or adding new backends to undertone will be prioritised
+based upon time and interest.
 
 Backend and OSC server versions tested against:
 
