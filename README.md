@@ -12,15 +12,13 @@
 ##### Table of Contents
 
 * [About](#about-)
+* [Status](#status-)
 * [Build and Test](#build-and-test-)
 * [Usage Overview](#usage-overview-)
 * [Documentation](#documentation-)
 * [License](#license-)
 
 ## About [&#x219F;](#table-of-contents)
-
-**Caution**: This is a work-in-progress under active development in the very
-early stages of sound-systems integration in LFE!
 
 This is a project for making music in LFE, with support for MIDI, audio
 processing, Open Sound Control, and more. The `undertone` project relies
@@ -39,6 +37,26 @@ Backend and OSC server versions tested against:
 * SuperCollider 3.11.2
 * Erlang OSC server 2.0 and 2.1
 * Ardour 5 and 6
+
+## Status [&#x219F;](#table-of-contents)
+
+**Caution**: This is a work-in-progress under active development in the very
+early stages of sound-systems integration in LFE: you have been warned! Loss of
+limb or sanity are not the responsbility of the project nor the maintainers.
+
+Current state of `undertone`:
+
+* An OTP release-based project that automtically runs in the LFE REPL
+* A fully functional Extempore REPL (any encountered issues are bugs --
+  [file a ticket](https://github.com/lfex/undertone/issues/new)!) with an
+  automatically reconnecting TCP client
+* Basic Open Sound Control support (SuperCollider, the Ardour DAW)
+
+For the current list of open tickets and the views by milestone, see the
+following:
+
+* https://github.com/lfex/undertone/issues
+* https://github.com/lfex/undertone/milestones
 
 ## Build and Test [&#x219F;](#table-of-contents)
 
@@ -59,7 +77,7 @@ $ rebar3 repl
 
 Note that, while under active development, the undertone logging level will be
 set to `debug`. If that's too much for you, before you start the REPL edit the
-`./config/sys.config` file and change the logging level entries to `notice` or
+`./config/sys.config` file and change `level => debug` to `notice` or
 `warning`.
 
 Usage examples:
