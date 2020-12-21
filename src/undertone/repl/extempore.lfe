@@ -83,7 +83,10 @@
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun check-extempore ()
-  (xt.msg:async "#(health ok)"))
+  (xt.msg:async "#(health ok)")
+  ;; Then let's give the logger a chance to print the result before displaying
+  ;; the extempore prompt:
+  (timer:sleep 500))
 
 (defun help ()
   (lfe_io:format "~s" `(,(binary_to_list
