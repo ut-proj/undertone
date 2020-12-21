@@ -19,6 +19,9 @@
 
 ## About [&#x219F;](#table-of-contents)
 
+**Caution**: This is a work-in-progress under active development in the very
+early stages of sound-systems integration in LFE!
+
 This is a project for making music in LFE, with support for MIDI, audio
 processing, Open Sound Control, and more. The `undertone` project relies
 heavily upon the phenomenal work of [Andrew Sorensen](https://github.com/digego)
