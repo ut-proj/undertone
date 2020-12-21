@@ -80,7 +80,7 @@ set to `debug`. If that's too much for you, before you start the REPL edit the
 `./config/sys.config` file and change `level => debug` to `notice` or
 `warning`.
 
-Usage examples:
+Usage examples have been moved here, due to the rapid accretion of content:
 
 * [A quick-start for Extempore in LFE](https://cnbbooks.github.io/lfe-music-programming/current/quick-start/extempore/index.html)
 * [SuperCollider via OSC](https://cnbbooks.github.io/lfe-music-programming/current/quick-start/osc/index.html#supercollider-a-hreftable-of-contentsa)
