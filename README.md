@@ -82,13 +82,13 @@ set to `debug`. If that's too much for you, before you start the REPL edit the
 
 Usage examples have been moved here, due to the rapid accretion of content:
 
-* [A quick-start for Extempore in LFE](https://cnbbooks.github.io/lfe-music-programming/current/quick-start/extempore/index.html)
-* [SuperCollider via OSC](https://cnbbooks.github.io/lfe-music-programming/current/quick-start/osc/index.html#supercollider-a-hreftable-of-contentsa)
+* [A quick-start for Extempore in LFE](https://undertone.lfe.io/book/current/quick-start/extempore/index.html)
+* [SuperCollider via OSC](https://undertone.lfe.io/book/current/quick-start/osc/index.html#supercollider-a-hreftable-of-contentsa)
 
 ## Documentation [&#x219F;](#table-of-contents)
 
 There is an early-stage [documentation effort](https://github.com/cnbbooks/lfe-music-programming)
-for this project, with draft content published [here](https://cnbbooks.github.io/lfe-music-programming/current/).
+for this project, with draft content published at [undertone.lfe.io/book](https://undertone.lfe.io/book/).
 
 ## License [&#x219F;](#table-of-contents)
 
