@@ -1,0 +1,147 @@
+;;;; TBD
+;;;;
+
+;; For use in setting up song in the LFE undertone REPL, having executed the
+;; following:
+;;   (undertone.repl.extempore:start)
+(sys:load "libs/external/portmidi.xtm")
+(sys:load "libs/core/pattern-language.xtm")
+
+(pm_initialize)
+(pm_print_devices)
+
+;; Then, in the REPL, do this:
+;;   (run "priv/xt-midi/lambda-days-2021/funs.xtml")
+
+;;; MIDI + DAW Setup
+(define *midiout* (pm_create_output_stream 8))
+(define track1-chan 0)
+(define track2-chan 1)
+(define track3-chan 2)
+(define track4-chan 3)
+(define track5-chan 4)
+(define track6-chan 5)
+(define track7-chan 6)
+
+
+;;; Note / Chord / Arpeggio Progressions
+(define chord1-v1 (list g2  g3  d4  f#4))
+(define chord1-v2 (list d3  g3  d4  a4))
+
+(define chord2-v1 (list c3  g3  g4  b4))
+(define chord2-v2 (list d3  g3  g4  d5))
+(define chord2-v3 (list d3  g3  g4  e4))
+(define chord2-v4 (list c3  g3  g4  e4))
+(define chord2-v5 (list d3  g3  g4  b4))
+
+(define chord3-v1 (list d3  d4  g4  d5))
+(define chord3-v2 (list g3  g4  a4  d5))
+
+(define chord4-v1 (list d3  c4  g4  d5))
+(define chord4-v2 (list g3  g4  b4  d5))
+(define chord4-v3 (list g3  g4  b4  b5))
+(define chord4-v4 (list d3  c4  g4  g5))
+(define chord4-v5 (list g3  g4  b4  a5))
+
+(define arp1-v1 (append chord1-v1 chord1-v1))
+(define arp1-v2 (append chord1-v1 chord1-v2))
+(define arp1-v3 (append chord1-v2 chord1-v1))
+
+(define arp2-v1 (append chord2-v1 chord2-v1))
+(define arp2-v2 (append chord2-v1 chord2-v2))
+(define arp2-v3 (append chord2-v1 chord2-v3))
+(define arp2-v4 (append chord2-v4 chord2-v5)) 
+
+(define arp3-v1 (append chord3-v1 chord3-v2))
+
+(define arp4-v1 (append chord4-v1 chord4-v2))
+(define arp4-v2 (append chord4-v1 chord4-v3))
+(define arp4-v3 (append chord4-v4 chord4-v5))
+
+(define prog1 (append arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1
+                      arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1
+                      arp3-v1 arp3-v1
+                      arp4-v1 arp4-v1
+                      arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1))
+
+(define prog2 (append arp1-v2 arp1-v2
+                      arp2-v1 arp2-v2
+                      arp1-v2 arp1-v1
+                      arp2-v2 arp2-v3
+                      arp3-v1 arp3-v1
+                      arp4-v2 arp4-v3
+                      arp1-v3 arp1-v3
+                      arp2-v4 arp2-v4))
+
+(define prog3 (list b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    d3  d4  g4  d5    g3  g4  a4  d5    d3  c4  g4  d5    g3  g4  b4  d5
+                    b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    a2  g3  c4  f#4   d3  g3  f#4 a4    g2  g3  c4  d4    c3  c4  d4  g4
+                    ))
+
+(define prog4 (list b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    d3  d4  g4  d5    g3  g4  a4  d5    d3  c4  g4  d5    g3  g4  b4  d5
+                    a2  g3  c4  f#4   d3  g3  f#4 a4    g2  g3  c4  d4    c3  c4  d4  g4
+                    ))
+
+(define prog (append prog1 prog2 prog3))
+
+(define song (append prog1
+                     prog2
+                     prog3
+                     prog1
+                     prog4
+                     prog1
+                     prog2
+                     prog3
+                     prog1
+                     prog2))
+
+;(play-seq (*metro* 'get-beat 4) 1 track6-chan song)
+;(play-seq (*metro* 'get-beat 4) 1 track6-chan prog)
+;(play-seq (*metro* 'get-beat 4) 1 track6-chan prog3)
+;(play-seq (*metro* 'get-beat 4) 1 track6-chan arp2-v4)
+;(play-seq (*metro* 'get-beat 4) 1 track6-chan (list b2  c#4 f#4 b4  b2  f#3 d4  b4))
+;(play-loop (*metro* 'get-beat 4) 4 track6-chan (append arp2-v4 (list b2  c#4 f#4 b4  b2  f#3 d4  b4)))
+
+(define bass-prog1 (map (lambda (x) (- x 12)) (every-nth 4 prog1)))
+(define bass-prog2 (map (lambda (x) (- x 12)) (every-nth 2 prog2)))
+(define bass-prog3 (map (lambda (x) (- x 12)) (every-nth 2 prog3)))
+
+(define chords-prog1 (partition 4 prog1))
+(define chords-prog2 (partition 2 prog2))
+(define chords-prog3 (partition 4 prog3))
+
+(define play1
+  (lambda ()
+    (let ((beat (*metro* 'get-beat 4)))
+      (play-seq beat 4 track1-chan bass-prog1)
+      (play-seq beat 4 track2-chan bass-prog1)
+      (play-seq beat 4 track3-chan bass-prog1)
+      (play-seq beat 4 track4-chan bass-prog1)
+      (play-chords beat 4 track5-chan chords-prog1)
+      (play-seq beat 1 track6-chan prog1))))
+
+(define play2
+  (lambda ()
+    (let ((beat (*metro* 'get-beat 4)))
+      (play-seq beat 4 track1-chan bass-prog1)
+      (play-seq beat 4 track2-chan bass-prog1)
+      (play-seq beat 2 track3-chan bass-prog2)
+      (play-seq beat 2 track4-chan bass-prog2)
+      (play-chords beat 2 track5-chan chords-prog2)
+      (play-seq beat 1 track6-chan prog2))))
+
+(define play3
+  (lambda ()
+    (let ((beat (*metro* 'get-beat 4)))
+      (play-seq beat 4 track1-chan bass-prog1)
+      (play-seq beat 4 track2-chan bass-prog1)
+      (play-seq beat 2 track3-chan bass-prog3)
+      (play-seq beat 2 track4-chan bass-prog3)
+      (play-chords beat 4 track5-chan chords-prog3)
+      (play-seq beat 1 track6-chan prog3))))
