@@ -1,5 +1,5 @@
 (defmodule undertone.app
-  (behaviour gen_server)
+  (behaviour application)
   ;; app implementation
   (export  
    (start 2)
