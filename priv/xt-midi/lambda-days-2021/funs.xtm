@@ -1,30 +1,5 @@
 ;;;; Performance functions for the Lambda Days 2021 ambient song
 
-;;; Utility functions
-
-(define random-volume
-  (lambda ()
-    (random 40 60 80 100)))
-
-(define drop
-  (lambda (n xs)
-    (if (or (= n 0) (equal? '() xs))
-        xs
-        (drop (- n 1) (cdr xs)))))
-
-(define every-nth
-  (lambda ( n xs)
-    (if (equal? '() xs)
-        '()
-        (cons (car xs)
-              (every-nth n (drop n xs))))))
-
-(define partition
-  (lambda (n lst)
-    (if (equal? '() lst)
-        '()
-        (cons (take n lst) (partition n (drop n lst))))))
-
 ;;; Play functions
 
 (define play-seq
@@ -41,8 +16,8 @@
               track
               (cdr notes))))
 
-(define play-seq
-  (lambda (beat dur track notes) #t))
+;(define play-seq
+;  (lambda (beat dur track notes) #t))
 
 ;;(play-seq (*metro* 'get-beat 4) 1 track6-chan prog)
 
@@ -74,8 +49,8 @@
               track
               (cdr chords))))
 
-(define play-chords
-  (lambda (beat dur track chords) #t))
+;(define play-chords
+;  (lambda (beat dur track chords) #t))
 
 ;;(play-chords (*metro* 'get-beat 4) 4 track3-chan chords-prog1)
 
@@ -119,9 +94,13 @@
   (lambda (beat dur count-down track chords)
     (-play-random beat dur count-down (- count-down 1) track chords)))
 
-(define -play-random
-  (lambda (beat dur count-down decr track chords) #t))
+;(define -play-random
+;  (lambda (beat dur count-down decr track chords) #t))
 
 ;; (play-random (*metro* 'get-beat 4) 1 4 track6-chan (list chord1-v1))
 ;; (play-random (*metro* 'get-beat 4) 0.5 8 track6-chan chords-prog3)
 ;; (play-random (*metro* 'get-beat 4) 0.25 16 track6-chan (list chord1-v1))
+
+(define loaded-funs
+  (lambda ()
+    "End-of-file placeholder."))
