@@ -1,0 +1,28 @@
+;;;; Utility functions for the Lambda Days 2021 ambient song
+
+(define random-volume
+  (lambda ()
+    (random 40 60 80 100)))
+
+(define drop
+  (lambda (n xs)
+    (if (or (= n 0) (equal? '() xs))
+        xs
+        (drop (- n 1) (cdr xs)))))
+
+(define every-nth
+  (lambda ( n xs)
+    (if (equal? '() xs)
+        '()
+        (cons (car xs)
+              (every-nth n (drop n xs))))))
+
+(define partition
+  (lambda (n lst)
+    (if (equal? '() lst)
+        '()
+        (cons (take n lst) (partition n (drop n lst))))))
+
+(define loaded-utils
+  (lambda ()
+    "End-of-file placeholder."))

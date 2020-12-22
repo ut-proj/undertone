@@ -1,0 +1,80 @@
+;;;; Note, chord, and arpeggio functions for the Lambda Days 2021 ambient song
+
+(define chord1-v1 (list g2  g3  d4  f#4))
+(define chord1-v2 (list d3  g3  d4  a4))
+
+(define chord2-v1 (list c3  g3  g4  b4))
+(define chord2-v2 (list d3  g3  g4  d5))
+(define chord2-v3 (list d3  g3  g4  e4))
+(define chord2-v4 (list c3  g3  g4  e4))
+(define chord2-v5 (list d3  g3  g4  b4))
+
+(define chord3-v1 (list d3  d4  g4  d5))
+(define chord3-v2 (list g3  g4  a4  d5))
+
+(define chord4-v1 (list d3  c4  g4  d5))
+(define chord4-v2 (list g3  g4  b4  d5))
+(define chord4-v3 (list g3  g4  b4  b5))
+(define chord4-v4 (list d3  c4  g4  g5))
+(define chord4-v5 (list g3  g4  b4  a5))
+
+(define arp1-v1 (append chord1-v1 chord1-v1))
+(define arp1-v2 (append chord1-v1 chord1-v2))
+(define arp1-v3 (append chord1-v2 chord1-v1))
+
+(define arp2-v1 (append chord2-v1 chord2-v1))
+(define arp2-v2 (append chord2-v1 chord2-v2))
+(define arp2-v3 (append chord2-v1 chord2-v3))
+(define arp2-v4 (append chord2-v4 chord2-v5)) 
+
+(define arp3-v1 (append chord3-v1 chord3-v2))
+
+(define arp4-v1 (append chord4-v1 chord4-v2))
+(define arp4-v2 (append chord4-v1 chord4-v3))
+(define arp4-v3 (append chord4-v4 chord4-v5))
+
+(define prog1 (append arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1
+                      arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1
+                      arp3-v1 arp3-v1
+                      arp4-v1 arp4-v1
+                      arp1-v1 arp1-v1
+                      arp2-v1 arp2-v1))
+
+(define prog2 (append arp1-v2 arp1-v2
+                      arp2-v1 arp2-v2
+                      arp1-v2 arp1-v1
+                      arp2-v2 arp2-v3
+                      arp3-v1 arp3-v1
+                      arp4-v2 arp4-v3
+                      arp1-v3 arp1-v3
+                      arp2-v4 arp2-v4))
+
+;; XXX let's get these converted into composed bits, as above
+(define prog3 (list b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    d3  d4  g4  d5    g3  g4  a4  d5    d3  c4  g4  d5    g3  g4  b4  d5
+                    b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    a2  g3  c4  f#4   d3  g3  f#4 a4    g2  g3  c4  d4    c3  c4  d4  g4
+                    ))
+
+;; XXX let's get these converted into composed bits, as above
+(define prog4 (list b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
+                    d3  d4  g4  d5    g3  g4  a4  d5    d3  c4  g4  d5    g3  g4  b4  d5
+                    a2  g3  c4  f#4   d3  g3  f#4 a4    g2  g3  c4  d4    c3  c4  d4  g4
+                    ))
+
+(define bass-prog1 (map (lambda (x) (- x 12)) (every-nth 4 prog1)))
+(define bass-prog2 (map (lambda (x) (- x 12)) (every-nth 2 prog2)))
+(define bass-prog3 (map (lambda (x) (- x 12)) (every-nth 2 prog3)))
+(define bass-prog4 (map (lambda (x) (- x 12)) (every-nth 4 prog4)))
+
+(define chords-prog1 (partition 4 prog1))
+(define chords-prog2 (partition 2 prog2))
+(define chords-prog3 (partition 4 prog3))
+(define chords-prog4 (partition 4 prog4))
+
+(define loaded-notes
+  (lambda ()
+    "End-of-file placeholder."))
