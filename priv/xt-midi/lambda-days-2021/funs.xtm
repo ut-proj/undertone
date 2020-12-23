@@ -54,22 +54,6 @@
 
 ;;(play-chords (*metro* 'get-beat 4) 4 track3-chan chords-prog1)
 
-(define play-random
-  (lambda (beat dur track chords)
-    (map (lambda (note)
-           (mplay *midiout*
-                  note
-                  (random-volume)
-                  dur
-                  track))
-         (car chords))
-    (callback (*metro* (+ beat (* .5 dur)))
-              'play-random
-              (+ beat dur)
-              dur
-              track
-              (cdr chords))))
-
 (define -play-random
   (lambda (beat dur count-down decr track chords)
     (mplay *midiout*
