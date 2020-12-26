@@ -48,6 +48,10 @@
 (define arp5-v4 (append chord5-v3 chord1-v3))
 (define arp5-v5 (append chord4-v7 chord2-v6))
 
+
+
+chord5-v3 chord1-v3
+
 (define prog0 (append arp1-v1 arp1-v1
                       arp1-v1 arp1-v1
                       arp5-v2 arp5-v3
@@ -71,18 +75,15 @@
                       arp1-v3 arp1-v3
                       arp2-v4 arp2-v4))
 
-;; XXX let's get these converted into composed bits, as above
 (define prog3 (append arp5-v1 arp5-v1
                       arp5-v2 arp5-v3
                       arp5-v1 arp5-v1
                       arp5-v4 arp5-v5))
 
-;; XXX let's get these converted into composed bits, as above
-(define prog4 (list b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
-                    b2  c#4 f#4 b4    b2  f#3 d4  b4    b2  c#4 f#4 b4    b2  f#3 d4  b4
-                    d3  d4  g4  d5    g3  g4  a4  d5    d3  c4  g4  d5    g3  g4  b4  d5
-                    a2  g3  c4  f#4   d3  g3  f#4 a4    g2  g3  c4  d4    c3  c4  d4  g4
-                    ))
+(define prog4 (append arp5-v1 arp5-v1
+                      arp5-v1 arp5-v1
+                      arp5-v2 arp4-v1
+                      arp5-v4 arp5-v5))
 
 (define bass-prog0 (map (lambda (x) (- x 12)) (every-nth 4 prog0)))
 (define bass-prog1 (map (lambda (x) (- x 12)) (every-nth 4 prog1)))
