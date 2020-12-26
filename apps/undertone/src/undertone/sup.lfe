@@ -35,6 +35,10 @@
 
 (defun init (_args)
   (log-info "Initializing children ...")
+  ;; XXX maybe perform some configurable checks here along the lines of:
+  ;;     - which REPLs are supported
+  ;;     - whether a given REPL should be started
+  ;;     - etc.
   `#(ok #(,(sup-flags)
           (,(child 'undertone.server 'start_link '())))))
 
