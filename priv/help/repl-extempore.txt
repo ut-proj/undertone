@@ -11,8 +11,9 @@ Built-in functions:
 (exit)      -- alias for '(quit)'
 (h)         -- alias for '(help)'
 (help)      -- display this information
+(load file) -- read the code in the given file and load in the current Extempore
+               session
 (quit)      -- quit the Extempore REPL and return to the LFE REPL
-(run file)  -- load the code in the given file and run in Extempore
 (term)      -- send message-terminating character sequence to force Extempore
                end-of-message (useful when troubleshooting)
 (v)         -- alias for '(version)'

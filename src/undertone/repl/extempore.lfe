@@ -28,8 +28,8 @@
     ('("exit") 'quit)
     ('("h") 'help)
     ('("help") 'help)
+    (`("load" ,file) (load file))
     ('("quit") 'quit)
-    (`("run" ,file) (run file))
     ('("term") 'term)
     ('("v") 'version)
     ('("version") 'version)
@@ -92,7 +92,8 @@
   (lfe_io:format "~s" `(,(binary_to_list
                            (undertone.sysconfig:read-priv
                             "help/repl-extempore.txt")))))
-(defun run (file-name)
+
+(defun load (file-name)
   (let ((`#(ok ,data) (file:read_file file-name)))
     (xt.msg:sync (binary_to_list data))))
 
