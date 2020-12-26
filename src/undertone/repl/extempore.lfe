@@ -76,6 +76,7 @@
         (loop 'restart))))))
 
 (defun start ()
+  (log-notice "Starting REPL ...")
   (loop 'start))
 
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
