@@ -1,26 +1,23 @@
-;;;; TBD
+;;;; The part of this example that is responsible to actually playing the score.
 ;;;;
 
 ;; For use in setting up song in the LFE undertone REPL, having executed the
 ;; following:
 ;;   (undertone.repl.extempore:start)
-(sys:load "libs/external/portmidi.xtm")
-(sys:load "libs/core/pattern-language.xtm")
-
-(pm_initialize)
-(pm_print_devices)
-
+;;
+;; Then:
+;;   (load "priv/xt-midi/lambda-days-2021/init.xtm")
+;;
 ;; Then, in the REPL, load the required functions:
-;;   (run "priv/xt-midi/lambda-days-2021/util.xtm")
-;;   (run "priv/xt-midi/lambda-days-2021/funs.xtm")
+;;   (load "priv/xt-midi/lambda-days-2021/util.xtm")
+;;   (load "priv/xt-midi/lambda-days-2021/funs.xtm")
 ;;
 ;; After that, load the notes, chords, and arpeggios:
-;;   (run "priv/xt-midi/lambda-days-2021/notes.xtm")
+;;   (load "priv/xt-midi/lambda-days-2021/notes.xtm")
+;;
+;; Now you're ready to set up the MIDI channels (coupled to tracks in the DAW)
+;; for the score ... and play it:
 
-;; XXX let's change the name of 'run' to 'load' (or alias it)
-
-;;; MIDI + DAW Setup
-(define *midiout* (pm_create_output_stream 8))
 (define track1-chan 0)
 (define track2-chan 1)
 (define track3-chan 2)
@@ -30,6 +27,16 @@
 (define track7-chan 6)
 (define track8-chan 7)
 (define track9-chan 8)
+
+(define play0
+  (lambda (beat)
+    (play-seq beat 4 track1-chan bass-prog0)
+    (play-seq beat 4 track2-chan bass-prog0)
+    (play-seq beat 4 track3-chan bass-prog0)
+    (play-seq beat 4 track4-chan bass-prog0)
+    (play-chords beat 4 track5-chan chords-prog0)
+    (play-chords beat 4 track6-chan chords-prog0)
+    (play-random beat 2 2 track8-chan chords-prog0)))
 
 (define play1
   (lambda (beat)
@@ -79,6 +86,7 @@
     (play-random beat 0.25 16 track8-chan chords-prog4)
     (play-random beat 0.25 16 track9-chan chords-prog4)))
 
+(play0 (*metro* 'get-beat 4))
 (play1 (*metro* 'get-beat 4))
 (play2 (*metro* 'get-beat 4))
 (play3 (*metro* 'get-beat 4))
@@ -87,8 +95,7 @@
 (define start
   (lambda (beat dur progs)
     (*metro (+ beat
-               (* .5 dur)
-               (foldl (lambda (acc x) (+ acc (length x))) 0 progs)))))
+               (* .5 dur (foldl (lambda (acc x) (+ acc (length x))) 0 progs))))))
 
 (define play
   (lambda ()
@@ -105,7 +112,8 @@
 ;      (callback (*metro* (+ beat (length prog1))) 'play4 beat)
       )))
 
-;(define song (append prog1
+;(define song (append prog0
+;                     prog1
 ;                     prog2
 ;                     prog3
 ;                     prog1
@@ -114,6 +122,7 @@
 ;                     prog2
 ;                     prog3
 ;                     prog1
+;                     prog2
 ;                     prog2))
 
 (define play-c

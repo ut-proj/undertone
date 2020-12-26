@@ -1,0 +1,15 @@
+;;;; Setup / initialization for MIDI, etc.
+;;;;
+
+(sys:load "libs/external/portmidi.xtm")
+(sys:load "libs/core/pattern-language.xtm")
+
+(pm_initialize)
+(pm_print_devices)
+
+(define primary-midi-device-id 8)
+(define *midiout* (pm_create_output_stream primary-midi-device-id))
+
+(define initialised
+  (lambda ()
+    "End-of-file placeholder."))
