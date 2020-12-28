@@ -4,6 +4,7 @@
 ;;;; line.
 (defmodule undertone.sexp
   (export
+   (parse 1)
    (readlines 1)))
 
 (defun readlines (prompt)

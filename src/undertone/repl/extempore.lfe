@@ -8,7 +8,9 @@
 
 (include-lib "logjam/include/logjam.hrl")
 
+;; XXX put these in configuration
 (defun prompt () "extempore> ")
+(defun max-hist () 50)
 
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   core repl functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,21 +21,33 @@
     (log-debug "Got user input (sexp): ~p" `(,sexp))
     sexp))
 
+(defun eval-dispatch
+  (((= `#m(tokens ,tokens) sexp))
+   (case tokens
+     (`("call" . ,_) (xt-blocking-eval sexp))
+     ('("check-xt") 'check-xt)
+     ('("eom") 'term)
+     ('("exit") 'quit)
+     ('("h") 'help)
+     ('("help") 'help)
+     ('("hist") 'hist)
+     (`("hist" ,idx) `#(hist ,idx))
+     (`("hist-line" ,idx) `#(hist-line ,idx))
+     (`("load" ,file) `#(load ,file))
+     ('("quit") 'quit)
+     (`("rerun" ,idx) `#(rerun ,idx))
+     ('("term") 'term)
+     ('("v") 'version)
+     ('("version") 'version)
+     (_ (xt-eval sexp)))))
+
 (defun repl-eval (sexp)
-  (case (mref sexp 'tokens)
-    ('() 'empty)
-    (`("call" . ,_) (xt-blocking-eval sexp))
-    ('("check-xt") 'check-xt)
-    ('("eom") 'term)
-    ('("exit") 'quit)
-    ('("h") 'help)
-    ('("help") 'help)
-    (`("load" ,file) (load file))
-    ('("quit") 'quit)
-    ('("term") 'term)
-    ('("v") 'version)
-    ('("version") 'version)
-    (_ (xt-eval sexp))))
+  (let ((tokens (mref sexp 'tokens)))
+    (case tokens
+      ('() 'empty)
+      (progn
+        (undertone.server:history-insert (mref sexp 'source))
+        (eval-dispatch sexp)))))
 
 (defun xt-blocking-eval (sexp)
   "This is going to be ugly ... (for now/until we have real parsing)"
@@ -57,7 +71,12 @@
     ('check-xt (check-extempore))
     ('empty 'ok)
     ('help (help))
+    ('hist (hist))
+    (`#(hist ,idx) (hist (list_to_integer idx)))
+    (`#(hist-line ,idx) (hist-line (list_to_integer idx)))
+    (`#(load ,file) (load file))
     ('quit 'ok)
+    (`#(rerun ,idx) (rerun (list_to_integer idx)))
     ('term (xt.msg:async ""))
     ('version (version))
     (_ (lfe_io:format "~p~n" `(,result))))
@@ -76,7 +95,7 @@
         (loop 'restart))))))
 
 (defun start ()
-  (log-notice "Starting REPL ...")
+  (log-debug "Starting REPL ...")
   (loop 'start))
 
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -94,9 +113,58 @@
                            (undertone.sysconfig:read-priv
                             "help/repl-extempore.txt")))))
 
+(defun hist (n)
+  (io:format "~n---- Recent REPL History ----~n~n")
+  (log-debug "Got hist line count: ~p" `(,n))
+  (show-hist (get-hist-list n))
+  (io:format "~n"))
+
+(defun hist ()
+  (hist (max-hist)))
+
+(defun hist-line (n)
+  (log-debug "Got hist index: ~p" `(,n))
+  (show-hist (undertone.server:history n)))
+
 (defun load (file-name)
   (let ((`#(ok ,data) (file:read_file file-name)))
     (xt.msg:sync (binary_to_list data))))
 
+(defun rerun (n)
+  ;; The history line index needs to be incremented, since when it does the
+  ;; lookup, this function will have been added to the history, incrementing
+  ;; the indices for all the other entries in the history by one.
+  (clj:-> (+ n 1)
+          (undertone.server:history)
+          (car)
+          (extract-hist-cmd)
+          (undertone.sexp:parse)
+          (eval-dispatch)
+          (print)))
+
 (defun version ()
   (lfe_io:format "~p~n" `(,(undertone.sysconfig:versions))))
+
+;;;;;::=--------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=--------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun extract-hist-cmd
+  ((`#(,_ ,elem))
+   elem))
+
+(defun get-hist-list (n)
+  (let* ((hist-list (undertone.server:history-list))
+         (pos (- (length hist-list) n))
+         (idx (if (=< pos 0) 0 pos)))
+    (lists:nthtail idx hist-list)))
+
+(defun print-hist-line (elem idx)
+  (lfe_io:format "~p. ~s~n" `(,idx ,(extract-hist-cmd elem))))
+
+(defun show-hist
+  (('())
+   'ok)
+  ((`(,h . ,t))
+   (print-hist-line h (+ 1 (length t)))
+   (show-hist t)))
