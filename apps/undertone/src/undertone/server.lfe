@@ -20,12 +20,14 @@
   ;; metadata API
   (export
    (versions 0))
-  ;; repl-history API
+  ;; repl-session API
   (export
     (session 1)
     (session-banner 0)
     (session-insert 1)
     (session-list 0)
+    (session-load 1)
+    (session-save 1)
     (session-show-max 0)
     (session-table 0))
   ;; debug API
@@ -173,11 +175,18 @@
 (defun session-list ()
   (ets:tab2list (session-table)))
 
+(defun session-load (file)
+  (ets:delete (session-table))
+  (ets:file2tab (session-table) file))
+
 (defun session-prev (key)
   (try
     (ets:prev (session-table) key)
     (catch (`#(error badarg ,trace)
       (parse-ets-errors trace)))))
+
+(defun session-save (file)
+  (ets:tab2file (session-table) file))
 
 (defun session-show-max ()
   (gen_server:call (SERVER) #(session show-max)))

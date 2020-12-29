@@ -12,17 +12,9 @@ Built-in functions:
 (exit)        -- alias for '(quit)'
 (h)           -- alias for '(help)'
 (help)        -- display this information
-(sess)        -- show the list of the recent REPL commands entered this session
-(sess n)      -- show the last n entries for the REPL command history of the
-                 current session
-(sess-line n) -- show the nth-from-last entry in the session's REPL commands
-                 (n = 1 gives the last entry; n = 4 gives the fourth-to-last,
-                 etc.)
 (load file)   -- read the code in the given file and load in the current
                  Extempore session
 (quit)        -- quit the Extempore REPL and return to the LFE REPL
-(rerun n)     -- re-run a previous command from the session entry list, with the
-                 given index
 (term)        -- send message-terminating character sequence to force Extempore
                  end-of-message (useful when troubleshooting)
 (v)           -- alias for '(version)'
@@ -35,4 +27,18 @@ Scheme / xtlang code and sent to the Extempore TCP server (compiler service) as
 an asynchronous call (no result, no output printed). If you would like to block
 on particular calls and see their return values, be sure to use the '(call ...)'
 REPL function.
+
+Session commands support:
+
+(sess)           -- show the list of the recent REPL commands entered this
+                    session
+(sess n)         -- show the last n entries for the REPL command history of the
+                    current session
+(sess-line n)    -- show the nth-from-last entry in the session's REPL commands
+                    (n = 1 gives the last entry; n = 4 gives the fourth-to-last,
+                    etc.)
+(sess-load file) -- load previously-saved session entries from a file
+(sess-save file) -- save the session entries to a file
+(rerun n)        -- re-run an entry from the REPL session with the given index;
+                    to get the correct index, run '(sess)' or '(sess n)'
 
