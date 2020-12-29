@@ -13,6 +13,7 @@
    (priv-file 1)
    (prompt 0)
    (read-priv 1)
+   (repl 0)
    (session 0)
    (version 1)
    (version+name 1)
@@ -178,6 +179,9 @@
   (case (file:read_file (priv-file priv-rel-path))
     (`#(ok ,data) data)
     (other other)))
+
+(defun repl ()
+  (config 'repl))
 
 (defun session ()
   (config 'session))
