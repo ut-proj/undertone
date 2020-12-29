@@ -20,6 +20,11 @@
   ;; metadata API
   (export
    (versions 0))
+  ;; repl config API
+  (export
+   (autostart-repl? 0)
+   (default-repl 0)
+   (extempore-prompt 0))
   ;; repl-session API
   (export
     (session 1)
@@ -44,7 +49,7 @@
 (defun SERVER () (MODULE))
 (defun initial-state ()
   `#m(backend ,(undertone.sysconfig:backend)
-      prompt ,(undertone.sysconfig:prompt)
+      repl ,(undertone.sysconfig:repl)
       session ,(maps:merge
                 (undertone.sysconfig:session)
                `#m(banner #m(file ,(undertone.sysconfig:banner-file)
@@ -98,6 +103,13 @@
   ;; Metadata support
   ((`#(version all) _from (= `#m(version ,ver) state))
    `#(reply ,(mref ver 'all) ,state))
+  ;; REPL support
+  ((`#(repl autostart?) _from (= `#m(repl ,repl) state))
+   `#(reply ,(mref repl 'autostart) ,state))
+  ((`#(repl default) _from (= `#m(repl ,repl) state))
+   `#(reply ,(mref repl 'default) ,state))
+  ((`#(repl extempore-prompt) _from (= `#m(repl ,repl) state))
+   `#(reply ,(clj:get-in repl '(extempore prompt)) ,state))
   ;; Session support
   ((`#(session banner) _from (= `#m(session ,sess) state))
    `#(reply ,(clj:get-in sess '(banner text)) ,state))
@@ -150,6 +162,19 @@
 
 (defun versions ()
   (gen_server:call (SERVER) `#(version all)))
+
+;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   REPL API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun autostart-repl? ()
+  (gen_server:call (SERVER) `#(repl autostart?)))
+
+(defun default-repl ()
+  (gen_server:call (SERVER) `#(repl default)))
+
+(defun extempore-prompt ()
+  (gen_server:call (SERVER) `#(repl extempore-prompt)))
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   session API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
