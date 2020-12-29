@@ -8,16 +8,12 @@
 
 (include-lib "logjam/include/logjam.hrl")
 
-;; XXX put these in configuration
-(defun prompt () "extempore> ")
-(defun max-sess () 50)
-
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   core repl functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun read ()
-  (let ((sexp (undertone.sexp:readlines (prompt))))
+  (let ((sexp (undertone.sexp:readlines (undertone.server:prompt))))
     (log-debug "Got user input (sexp): ~p" `(,sexp))
     sexp))
 
@@ -103,6 +99,8 @@
 
 (defun start ()
   (log-debug "Starting REPL ...")
+  (undertone.server:set-repl 'extempore)
+  (io:format "~s" `(,(undertone.server:extempore-banner)))
   (loop 'start))
 
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

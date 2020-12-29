@@ -186,10 +186,33 @@
     (other other)))
 
 (defun repl ()
-  (let* ((cfg (config 'repl)))
-    (mset cfg
-          'extempore
-          (maps:from_list (mref cfg 'extempore)))))
+  (let* ((cfg (config 'repl))
+         (xt (maps:from_list (mref cfg 'extempore)))
+         (xt-banner-file (mref xt 'banner))
+         (xt-prompt (mref xt 'prompt))
+         (xt-banner-text (lists:flatten
+                          (binary_to_list (read-priv xt-banner-file))))
+         (ut (maps:from_list (mref cfg 'undertone)))
+         (ut-banner-file (mref ut 'banner))
+         (ut-prompt (mref ut 'prompt))
+         (ut-banner-text (lists:flatten
+                          (binary_to_list (read-priv ut-banner-file)))))
+    (clj:-> cfg
+            (mset 'extempore (mset xt
+                                   'banner
+                                   `#m(file ,xt-banner-file
+                                       ;; XXX if we don't need to re-display the prompt
+                                       ;; once this is a gen_server, we can remove the call
+                                       ;; to format below; if we do need it, we'll replace
+                                       ;; the empty string with the prompt
+                                       text ,(io_lib:format
+                                              xt-banner-text '("")))))
+            (mset 'undertone (mset ut
+                                   'banner
+                                   `#m(file ,ut-banner-file
+                                       ;; XXX see note above
+                                       text ,(io_lib:format
+                                              ut-banner-text '(""))))))))
 
 (defun session ()
   (config 'session))
