@@ -35,7 +35,7 @@
   (case parsed
     ("Welcome to extempore!" (progn
                                (timer:sleep 500)
-                               (undertone.sysconfig:render-banner)))
+                               (render-banner)))
     ("#(health ok)" (log-notice "Extempore TCP server connection healthy"))
     (_ (progn
          (log-debug "No special packet handling for parsed value")
@@ -61,14 +61,18 @@
 ;;;::=-   Utility functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun maybe-one-msg
+  ((`(,msg . ()))
+    msg)
+   ((msgs)
+    msgs))
+
+(defun render-banner ()
+  (io:put_chars `(,(undertone.server:session-banner))))
+
 (defun split-xt-packet (packet)
   (list-comp
     ((<- x (when (=/= x #b()))
          (binary:split packet (rcv-delim) '(global))))
     (xt.lang:->lfe x)))
 
-(defun maybe-one-msg
-  ((`(,msg . ()))
-    msg)
-   ((msgs)
-    msgs))

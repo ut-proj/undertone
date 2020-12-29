@@ -6,13 +6,14 @@
    (backend 0)
    (backend-name 0)
    (backend-display 0)
+   (backend-display-version 0)
    (backend-version 0)
    (banner-file 0)
    (banner 0)
    (priv-file 1)
    (prompt 0)
    (read-priv 1)
-   (render-banner 0)
+   (session 0)
    (version 1)
    (version+name 1)
    (version-arch 0)
@@ -51,7 +52,7 @@
 
 ;Docs: \e[1;34mhttps://cnbbooks.github.io/lfe-music-programming/current/ \e[0m
 ;File bug report: \e[1;34mhttps://github.com/lfex/undertone/issues/new \e[0m
-                   
+
 (defun banner ()
   "Colour sequence:
    - A series of blues for the mushroom and spores
@@ -80,12 +81,12 @@
     (io_lib:format data `(,lcyan ,end
                           ,blue  ,end
                           ,lcyan ,end
-                          
+
                           ,blue  ,end
                           ,lblue ,end
                           ,blue  ,end
                           ,lblue ,end
-                          
+
                           ,blue  ,end
                           ,lblue ,end
                           ,blue  ,end
@@ -96,18 +97,18 @@
                           ,blue  ,end
                           ,lblue ,end
                           ,blue  ,end
-                          
+
                           ,blue  ,end
                           ,cyan  ,end
                           ,blue  ,end
                           ,lblue ,end
                           ,blue  ,end
-                          
+
                           ,cyan  ,end
                           ,blue  ,end
-                          ,lblue ,end                          
+                          ,lblue ,end
                           ,blue  ,end
-                          
+
                           ,cyan    ,end
                           ,blue    ,end
                           ,magenta ,end
@@ -122,7 +123,7 @@
                           ,green  ,end
                           ,lgreen ,end
                           ,green  ,end
-                          
+
                           ,white ,end
 
                           ,green  ,end
@@ -178,8 +179,8 @@
     (`#(ok ,data) data)
     (other other)))
 
-(defun render-banner ()
-  (io:put_chars `(,(banner))))
+(defun session ()
+  (config 'session))
 
 (defun version (app-name)
   (application:load app-name)
@@ -212,7 +213,7 @@
 (defun versions-deps ()
   `(,(version+name 'osc_lib)
     ,(version+name 'tcp-client)))
-  
+
 
 (defun versions-rebar ()
   `(,(version+name 'rebar)
