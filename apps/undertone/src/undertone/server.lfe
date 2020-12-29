@@ -55,7 +55,8 @@
                  undertone ,(undertone.sysconfig:version 'undertone))))
 
 (defun genserver-opts () '())
-(defun unknown-command () #(error "Unknown command."))
+(defun unknown-command (data)
+  `#(error ,(lists:flatten (++ "Unknown command: " data))))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,31 +90,31 @@
 (defun handle_call
   ;; Backend support
   ((`#(backend display-name) _from (= `#m(backend ,back) state))
-   `#(reply ,(mref back 'display-name) state))
-  ((`#(backend display-version) _from (= `#m(backend ,back) state))
-   `#(reply ,(mref back 'display-name) state))
+   `#(reply ,(mref back 'display-name) ,state))
+  ((`#(backend display-version) _from (= `#m(version ,ver) state))
+   `#(reply ,(mref ver 'backend-display) ,state))
   ((`#(backend name) _from (= `#m(backend ,back) state))
-   `#(reply ,(mref back 'name) state))
+   `#(reply ,(mref back 'name) ,state))
   ;; Metadata support
   ((`#(version all) _from (= `#m(version ,ver) state))
-   `#(reply ,(mref ver 'all) state))
+   `#(reply ,(mref ver 'all) ,state))
   ;; Session support
   ((`#(session banner) _from (= `#m(session ,sess) state))
-   `#(reply ,(clj:get-in sess '(session banner text)) state))
+   `#(reply ,(clj:get-in sess '(banner text)) ,state))
   ((`#(session show-max) _from (= `#m(session ,sess) state))
-   `#(reply ,(mref sess 'show-max) state))
+   `#(reply ,(mref sess 'show-max) ,state))
   ((`#(session table) _from (= `#m(session ,sess) state))
-   `#(reply ,(mref sess 'table) state))
+   `#(reply ,(mref sess 'table) ,state))
   ;; Stop
   (('stop _from (= `#m(session ,sess) state))
    (ets:delete (mref sess 'table))
-   `#(stop normal ok state))
+   `#(stop normal ok ,state))
   ;; Testing / debugging
   ((`#(echo ,msg) _from state)
-   `#(reply ,msg state))
+   `#(reply ,msg ,state))
   ;; Fall-through
   ((message _from state)
-   `#(reply ,(unknown-command) ,state)))
+   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
 
 (defun handle_info
   ((`#(EXIT ,_from normal) state)
