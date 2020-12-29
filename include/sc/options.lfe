@@ -23,7 +23,7 @@
   (ugen-plugins-path '())
   (device 'undefined))
 
-;; This function is for display purpses when used in the REPL
-;; and need to be the last function in the include file.
-(defun |-- loaded include: sc --| ()
+;; This function is for display purposes when used in the REPL
+;; and needs to be the last function in the include file.
+(defun |-- loaded include: sc/options --| ()
   'ok)

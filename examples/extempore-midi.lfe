@@ -4,7 +4,7 @@
 ;; binary; note that it will take a while (~1 minute) and this call will block
 ;; until the load is finished
 (xt:sys-load "libs/external/portmidi.xtm")
-(include-lib "undertone/include/xt-midi.lfe")
+(include-lib "undertone/include/xt/midi.lfe")
 
 (midi-init)
 

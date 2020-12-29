@@ -19,7 +19,7 @@
   (export
    (echo 1) (echo 2)))
 
-(include-lib "include/client.lfe")
+(include-lib "include/osc/client.lfe")
 
 (defun default-host () "127.0.0.1")
 (defun default-port () 2357)

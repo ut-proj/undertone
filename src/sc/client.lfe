@@ -25,7 +25,7 @@
    (toggle-node 3)
    (version 1)))
 
-(include-lib "include/client.lfe")
+(include-lib "include/osc/client.lfe")
 
 (defun default-host () "127.0.0.1")
 (defun default-port () 57110)
