@@ -180,7 +180,7 @@
 (defun	Db-1	()	8.66	)
 (defun	C-1	()	8.18	)
 
-;; This function is for display purpses when used in the REPL
-;; and need to be the last function in the include file.
-(defun |-- loaded include: notes --| ()
+;; This function is for display purposes when used in the REPL
+;; and needs to be the last function in the include file.
+(defun |-- loaded include: notes/names --| ()
   'ok)

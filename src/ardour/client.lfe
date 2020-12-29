@@ -21,7 +21,7 @@
    (strip-plugin-desc 3)
    (unmute-monitor 1)))
 
-(include-lib "include/client.lfe")
+(include-lib "include/osc/client.lfe")
 
 (defun default-host () "127.0.0.1")
 (defun default-port () 3819)
