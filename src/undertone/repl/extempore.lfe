@@ -33,6 +33,7 @@
      (`("load" ,file) `#(load ,file))
      ('("quit") 'quit)
      (`("rerun" ,idx) `#(rerun ,idx))
+     (`("rerun" ,start ,end) `#(rerun ,start ,end))
      ('("sess") 'sess)
      (`("sess" ,idx) `#(sess ,idx))
      (`("sess-line" ,idx) `#(sess-line ,idx))
@@ -48,7 +49,7 @@
     (case tokens
       ('() 'empty)
       (progn
-        (undertone.server:session-insert (mref sexp 'source))
+        (maybe-save-command sexp)
         (eval-dispatch sexp)))))
 
 (defun xt-blocking-eval (sexp)
@@ -76,6 +77,8 @@
     (`#(load ,file) (load file))
     ('quit 'ok)
     (`#(rerun ,idx) (rerun (list_to_integer idx)))
+    (`#(rerun ,start ,end) (rerun (list_to_integer start)
+                                  (list_to_integer end)))
     ('sess (sess))
     (`#(sess ,idx) (sess (list_to_integer idx)))
     (`#(sess-line ,idx) (sess-line (list_to_integer idx)))
@@ -135,22 +138,18 @@
     (xt.msg:sync (binary_to_list data))))
 
 (defun rerun (n)
-  ;; The line index needs to be incremented, since when it does the lookup,
-  ;; this function will have been added to the storage too, incrementing the
-  ;; indices for all the other entries in storage by one.
-  ;;
   ;; XXX track which command was last executred in the server state, then when
   ;;     this command it run, it can look there and decide whether to run from
   ;;     the session or the history (when support for cross-session commands is
   ;;     added); this will have to wait until the REPL loop is converted to a
   ;;     gen_server or something similar
-  (clj:-> (+ n 1)
-          (undertone.server:session)
-          (car)
-          (extract-prev-cmd)
+  (clj:-> (get-cmd n)
           (undertone.sexp:parse)
           (eval-dispatch)
           (print)))
+
+(defun rerun (n m)
+  (lists:map #'rerun/1 (lists:reverse (lists:seq m n))))
 
 (defun version ()
   (lfe_io:format "~p~n" `(,(undertone.server:versions))))
@@ -163,11 +162,27 @@
   ((`#(,_ ,elem))
    elem))
 
+(defun get-cmd (n)
+  (let ((last-cmd (undertone.server:session n)))
+    (case last-cmd
+      ('() '())
+      (_ (clj:-> last-cmd
+                 (car)
+                 (extract-prev-cmd))))))
+
 (defun get-sess-list (n)
   (let* ((sess-list (undertone.server:session-list))
          (pos (- (length sess-list) n))
          (idx (if (=< pos 0) 0 pos)))
     (lists:nthtail idx sess-list)))
+
+(defun maybe-save-command
+  "Don't save the command if it's a re-run or if it's the same as the previous
+  command."
+  (((= `#m(tokens ,tkns source ,src) sexp))
+   (cond ((== (car tkns) "rerun") 'skip-history)
+          ((== src (get-cmd 1)) 'skip-history)
+          ('true (undertone.server:session-insert (mref sexp 'source))))))
 
 (defun print-prev-line (elem idx)
   (lfe_io:format "~p. ~s~n" `(,idx ,(extract-prev-cmd elem))))

@@ -41,4 +41,7 @@ Session commands support:
 (sess-save file) -- save the session entries to a file
 (rerun n)        -- re-run an entry from the REPL session with the given index;
                     to get the correct index, run '(sess)' or '(sess n)'
+(rerun n m)      -- re-run a range of entries starting at the older, higher
+                    numbered index n through (including) the lower numbered
+                    index m
 
