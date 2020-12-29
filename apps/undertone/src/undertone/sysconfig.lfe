@@ -10,6 +10,8 @@
    (backend-version 0)
    (banner-file 0)
    (banner 0)
+   (config 1)
+   (history 0)
    (priv-file 1)
    (prompt 0)
    (read-priv 1)
@@ -168,6 +170,9 @@
                      `(,key))
            cfg))))))
 
+(defun history ()
+  (config 'history))
+
 (defun priv-file (priv-rel-path)
   (filename:join (code:priv_dir (APPKEY))
                  priv-rel-path))
@@ -181,7 +186,10 @@
     (other other)))
 
 (defun repl ()
-  (config 'repl))
+  (let* ((cfg (config 'repl)))
+    (mset cfg
+          'extempore
+          (maps:from_list (mref cfg 'extempore)))))
 
 (defun session ()
   (config 'session))

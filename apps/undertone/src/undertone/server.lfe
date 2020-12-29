@@ -49,6 +49,7 @@
 (defun SERVER () (MODULE))
 (defun initial-state ()
   `#m(backend ,(undertone.sysconfig:backend)
+      history ,(undertone.sysconfig:history)
       repl ,(undertone.sysconfig:repl)
       session ,(maps:merge
                 (undertone.sysconfig:session)
@@ -90,6 +91,8 @@
    `#(ok ,state)))
 
 (defun handle_cast (_msg state)
+  ;; XXX add support for setting the current session type; should be one of the
+  ;;     supported REPLs, i.e., 'extempore or 'undertone)
   `#(noreply ,state))
 
 (defun handle_call
@@ -186,9 +189,9 @@
 
 (defun session (dest-idx current-idx current-key)
   (cond
-   ((< dest-idx 0) "error: history index must be positive")
+   ((< dest-idx 0) "error: session command index must be positive")
    ((== dest-idx 0) (session 1 current-idx current-key))
-   ((== current-key 'prev-not-found) "error: no history for given index")
+   ((== current-key 'prev-not-found) "error: no session command for given index")
    ((== dest-idx current-idx) (ets:lookup (session-table) current-key))
    ('true (session dest-idx (+ current-idx 1) (session-prev current-key)))))
 
@@ -218,13 +221,20 @@
   (gen_server:call (SERVER) #(session show-max)))
 
 (defun session-table ()
+  ;; XXX check for current / active session
+  ;; XXX use that to get the session table name
   (gen_server:call (SERVER) #(session table)))
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   history API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TBD
+(defun history-table ()
+  "The history record and presented is specific for the given session, in other
+  words, the history type is dicated by the current session."
+  ;; XXX check for current / active session
+  ;; XXX use that to get the history table name
+  (gen_server:call (SERVER) #(history table)))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
