@@ -12,14 +12,17 @@ Built-in functions:
 (exit)        -- alias for '(quit)'
 (h)           -- alias for '(help)'
 (help)        -- display this information
-(hist)        -- show the recent REPL command history
-(hist n)      -- show the last n entries of REPL command history
-(hist-line n) -- show the nth-from-last entry in the REPL command history (n = 1
-                 gives the last entry; n = 4 gives the fourth-to-last, etc.)
+(sess)        -- show the list of the recent REPL commands entered this session
+(sess n)      -- show the last n entries for the REPL command history of the
+                 current session
+(sess-line n) -- show the nth-from-last entry in the session's REPL commands
+                 (n = 1 gives the last entry; n = 4 gives the fourth-to-last,
+                 etc.)
 (load file)   -- read the code in the given file and load in the current
                  Extempore session
 (quit)        -- quit the Extempore REPL and return to the LFE REPL
-(rerun n)     -- re-run an entry from the REPL history with the given index
+(rerun n)     -- re-run a previous command from the session entry list, with the
+                 given index
 (term)        -- send message-terminating character sequence to force Extempore
                  end-of-message (useful when troubleshooting)
 (v)           -- alias for '(version)'

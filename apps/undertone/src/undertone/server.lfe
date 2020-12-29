@@ -1,21 +1,35 @@
 (defmodule undertone.server
   (behaviour gen_server)
+  ;; gen_server implementation
   (export
-    ;; gen_server implementation
     (start_link 0)
-    (stop 0)
-    ;; callback implementation
+    (stop 0))
+  ;; callback implementation
+  (export
     (init 1)
     (handle_call 3)
     (handle_cast 2)
     (handle_info 2)
     (terminate 2)
-    (code_change 3)
-    ;; repl-history API
-    (history 1)
-    (history-insert 1)
-    (history-list 0)
-    ;; debug API
+    (code_change 3))
+  ;; backend API
+  (export
+   (backend-display-name 0)
+   (backend-display-version 0)
+   (backend-name 0))
+  ;; metadata API
+  (export
+   (versions 0))
+  ;; repl-history API
+  (export
+    (session 1)
+    (session-banner 0)
+    (session-insert 1)
+    (session-list 0)
+    (session-show-max 0)
+    (session-table 0))
+  ;; debug API
+  (export
     (pid 0)
     (echo 1)))
 
@@ -26,12 +40,20 @@
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun SERVER () (MODULE))
-(defun initial-state () '#())
+(defun initial-state ()
+  `#m(backend ,(undertone.sysconfig:backend)
+      prompt ,(undertone.sysconfig:prompt)
+      session ,(maps:merge
+                (undertone.sysconfig:session)
+               `#m(banner #m(file ,(undertone.sysconfig:banner-file)
+                             text ,(undertone.sysconfig:banner))))
+      version #m(all ,(undertone.sysconfig:versions)
+                 backend-display ,(undertone.sysconfig:backend-display-version)
+                 system ,(undertone.sysconfig:version-system)
+                 undertone ,(undertone.sysconfig:version 'undertone))))
+
 (defun genserver-opts () '())
 (defun unknown-command () #(error "Unknown command."))
-
-;; XXX put this in configuration
-(defun hist-table () 'replhistory)
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,20 +73,40 @@
 ;;;::=-   callback implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun init (state)
-  (ets:new (hist-table) '(ordered_set named_table public))
-  (log-debug (maps:merge #m(text "REPL history table info")
-                         (maps:from_list (ets:info (hist-table)))))
-  `#(ok ,state))
+(defun init
+  (((= `#m(session ,sess) state))
+   (let ((table (mref sess 'table)))
+     (ets:new table (mref sess 'options))
+     (log-debug (maps:merge #m(text "REPL history table info")
+                            (maps:from_list (ets:info table)))))
+   `#(ok ,state)))
 
 (defun handle_cast (_msg state)
   `#(noreply ,state))
 
 (defun handle_call
-  (('stop _from state)
-   (ets:delete (hist-table))
+  ;; Backend support
+  ((`#(backend display-name) _from (= `#m(backend ,back) state))
+   `#(reply ,(mref back 'display-name) state))
+  ((`#(backend display-version) _from (= `#m(backend ,back) state))
+   `#(reply ,(mref back 'display-name) state))
+  ((`#(backend name) _from (= `#m(backend ,back) state))
+   `#(reply ,(mref back 'name) state))
+  ;; Metadata support
+  ((`#(version all) _from (= `#m(version ,ver) state))
+   `#(reply ,(mref ver 'all) state))
+  ;; Session support
+  ((`#(session banner) _from (= `#m(session ,sess) state))
+   `#(reply ,(clj:get-in sess '(session banner text)) state))
+  ((`#(session show-max) _from (= `#m(session ,sess) state))
+   `#(reply ,(mref sess 'show-max) state))
+  ((`#(session table) _from (= `#m(session ,sess) state))
+   `#(reply ,(mref sess 'table) state))
+  ;; Stop
+  (('stop _from (= `#m(session ,sess) state))
+   (ets:delete (mref sess 'table))
    `#(stop normal ok state))
-  ;; For sanity-checking / testing
+  ;; Testing / debugging
   ((`#(echo ,msg) _from state)
    `#(reply ,msg state))
   ;; Fall-through
@@ -87,39 +129,67 @@
   `#(ok ,state))
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   backend API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun backend-display-name ()
+  (gen_server:call (SERVER) `#(backend display-name)))
+
+(defun backend-display-version ()
+  (gen_server:call (SERVER) `#(backend display-version)))
+
+(defun backend-name ()
+  (gen_server:call (SERVER) `#(backend name)))
+
+;;;;;::=----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   metadata API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun versions ()
+  (gen_server:call (SERVER) `#(version all)))
+
+;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   session API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun history (idx)
-  (let ((latest (ets:last (hist-table))))
-    (history idx 1 latest)))
+(defun session (idx)
+  (let ((latest (ets:last (session-table))))
+    (session idx 1 latest)))
 
-(defun parse-ets-errors (trace)
-  (case trace
-    (`(#(ets prev (,_ $end_of_table) ,_) . ,_) 'prev-not-found)
-    (_ (progn
-         (log-error (maps:from_list trace))
-         'error))))
+(defun session (dest-idx current-idx current-key)
+  (cond
+   ((< dest-idx 0) "error: history index must be positive")
+   ((== dest-idx 0) (session 1 current-idx current-key))
+   ((== current-key 'prev-not-found) "error: no history for given index")
+   ((== dest-idx current-idx) (ets:lookup (session-table) current-key))
+   ('true (session dest-idx (+ current-idx 1) (session-prev current-key)))))
 
-(defun get-prev-hist (key)
+(defun session-banner ()
+  (gen_server:call (SERVER) #(session banner)))
+
+(defun session-insert (data)
+  (ets:insert (session-table) `#(,(erlang:monotonic_time) ,data)))
+
+(defun session-list ()
+  (ets:tab2list (session-table)))
+
+(defun session-prev (key)
   (try
-    (ets:prev (hist-table) key)
+    (ets:prev (session-table) key)
     (catch (`#(error badarg ,trace)
       (parse-ets-errors trace)))))
 
-(defun history (dest-idx current-idx current-key)
-  (cond
-   ((< dest-idx 0) "error: history index must be positive")
-   ((== dest-idx 0) (history 1 current-idx current-key))
-   ((== current-key 'prev-not-found) "error: no history for given index")
-   ((== dest-idx current-idx) (ets:lookup (hist-table) current-key))
-   ('true (history dest-idx (+ current-idx 1) (get-prev-hist current-key)))))
+(defun session-show-max ()
+  (gen_server:call (SERVER) #(session show-max)))
 
-(defun history-insert (data)
-  (ets:insert (hist-table) `#(,(erlang:monotonic_time) ,data)))
+(defun session-table ()
+  (gen_server:call (SERVER) #(session table)))
 
-(defun history-list ()
-  (ets:tab2list (hist-table)))
+;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   history API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TBD
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -130,3 +200,14 @@
 
 (defun echo (msg)
   (gen_server:call (SERVER) `#(echo ,msg)))
+
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun parse-ets-errors (trace)
+  (case trace
+    (`(#(ets prev (,_ $end_of_table) ,_) . ,_) 'prev-not-found)
+    (_ (progn
+         (log-error (maps:from_list trace))
+         'error))))

@@ -10,7 +10,7 @@
 
 ;; XXX put these in configuration
 (defun prompt () "extempore> ")
-(defun max-hist () 50)
+(defun max-sess () 50)
 
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   core repl functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,12 +30,12 @@
      ('("exit") 'quit)
      ('("h") 'help)
      ('("help") 'help)
-     ('("hist") 'hist)
-     (`("hist" ,idx) `#(hist ,idx))
-     (`("hist-line" ,idx) `#(hist-line ,idx))
      (`("load" ,file) `#(load ,file))
      ('("quit") 'quit)
      (`("rerun" ,idx) `#(rerun ,idx))
+     ('("sess") 'sess)
+     (`("sess" ,idx) `#(sess ,idx))
+     (`("sess-line" ,idx) `#(sess-line ,idx))
      ('("term") 'term)
      ('("v") 'version)
      ('("version") 'version)
@@ -46,7 +46,7 @@
     (case tokens
       ('() 'empty)
       (progn
-        (undertone.server:history-insert (mref sexp 'source))
+        (undertone.server:session-insert (mref sexp 'source))
         (eval-dispatch sexp)))))
 
 (defun xt-blocking-eval (sexp)
@@ -71,9 +71,9 @@
     ('check-xt (check-extempore))
     ('empty 'ok)
     ('help (help))
-    ('hist (hist))
-    (`#(hist ,idx) (hist (list_to_integer idx)))
-    (`#(hist-line ,idx) (hist-line (list_to_integer idx)))
+    ('sess (sess))
+    (`#(sess ,idx) (sess (list_to_integer idx)))
+    (`#(sess-line ,idx) (sess-line (list_to_integer idx)))
     (`#(load ,file) (load file))
     ('quit 'ok)
     (`#(rerun ,idx) (rerun (list_to_integer idx)))
@@ -113,58 +113,64 @@
                            (undertone.sysconfig:read-priv
                             "help/repl-extempore.txt")))))
 
-(defun hist (n)
-  (io:format "~n---- Recent REPL History ----~n~n")
-  (log-debug "Got hist line count: ~p" `(,n))
-  (show-hist (get-hist-list n))
+(defun sess (n)
+  (io:format "~n---- Recent REPL Session Commands ----~n~n")
+  (log-debug "Got sess line count: ~p" `(,n))
+  (show-prev (get-sess-list n))
   (io:format "~n"))
 
-(defun hist ()
-  (hist (max-hist)))
+(defun sess ()
+  (sess (undertone.server:session-show-max)))
 
-(defun hist-line (n)
-  (log-debug "Got hist index: ~p" `(,n))
-  (show-hist (undertone.server:history n)))
+(defun sess-line (n)
+  (log-debug "Got session entries index: ~p" `(,n))
+  (show-prev (undertone.server:session n)))
 
 (defun load (file-name)
   (let ((`#(ok ,data) (file:read_file file-name)))
     (xt.msg:sync (binary_to_list data))))
 
 (defun rerun (n)
-  ;; The history line index needs to be incremented, since when it does the
-  ;; lookup, this function will have been added to the history, incrementing
-  ;; the indices for all the other entries in the history by one.
+  ;; The line index needs to be incremented, since when it does the lookup,
+  ;; this function will have been added to the storage too, incrementing the
+  ;; indices for all the other entries in storage by one.
+  ;;
+  ;; XXX track which command was last executred in the server state, then when
+  ;;     this command it run, it can look there and decide whether to run from
+  ;;     the session or the history (when support for cross-session commands is
+  ;;     added); this will have to wait until the REPL loop is converted to a
+  ;;     gen_server or something similar
   (clj:-> (+ n 1)
-          (undertone.server:history)
+          (undertone.server:session)
           (car)
-          (extract-hist-cmd)
+          (extract-prev-cmd)
           (undertone.sexp:parse)
           (eval-dispatch)
           (print)))
 
 (defun version ()
-  (lfe_io:format "~p~n" `(,(undertone.sysconfig:versions))))
+  (lfe_io:format "~p~n" `(,(undertone.server:versions))))
 
 ;;;;;::=--------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=--------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun extract-hist-cmd
+(defun extract-prev-cmd
   ((`#(,_ ,elem))
    elem))
 
-(defun get-hist-list (n)
-  (let* ((hist-list (undertone.server:history-list))
-         (pos (- (length hist-list) n))
+(defun get-sess-list (n)
+  (let* ((sess-list (undertone.server:session-list))
+         (pos (- (length sess-list) n))
          (idx (if (=< pos 0) 0 pos)))
-    (lists:nthtail idx hist-list)))
+    (lists:nthtail idx sess-list)))
 
-(defun print-hist-line (elem idx)
-  (lfe_io:format "~p. ~s~n" `(,idx ,(extract-hist-cmd elem))))
+(defun print-prev-line (elem idx)
+  (lfe_io:format "~p. ~s~n" `(,idx ,(extract-prev-cmd elem))))
 
-(defun show-hist
+(defun show-prev
   (('())
    'ok)
   ((`(,h . ,t))
-   (print-hist-line h (+ 1 (length t)))
-   (show-hist t)))
+   (print-prev-line h (+ 1 (length t)))
+   (show-prev t)))
