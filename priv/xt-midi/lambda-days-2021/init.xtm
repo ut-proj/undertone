@@ -7,7 +7,7 @@
 (pm_initialize)
 (pm_print_devices)
 
-(define primary-midi-device-id 8)
+(define primary-midi-device-id 4)
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
 
 (define initialised

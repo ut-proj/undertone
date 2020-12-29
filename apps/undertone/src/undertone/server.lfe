@@ -24,7 +24,10 @@
   (export
    (autostart-repl? 0)
    (default-repl 0)
-   (extempore-prompt 0))
+   (extempore-banner 0)
+   (extempore-prompt 0)
+   (prompt 0)
+   (set-repl 1))
   ;; repl-session API
   (export
     (session 1)
@@ -49,6 +52,7 @@
 (defun SERVER () (MODULE))
 (defun initial-state ()
   `#m(backend ,(undertone.sysconfig:backend)
+      current-repl undefined
       history ,(undertone.sysconfig:history)
       repl ,(undertone.sysconfig:repl)
       session ,(maps:merge
@@ -90,10 +94,11 @@
                             (maps:from_list (ets:info table)))))
    `#(ok ,state)))
 
-(defun handle_cast (_msg state)
-  ;; XXX add support for setting the current session type; should be one of the
-  ;;     supported REPLs, i.e., 'extempore or 'undertone)
-  `#(noreply ,state))
+(defun handle_cast
+  ((`#(repl set ,repl-id) state)
+   `#(noreply ,(mset state 'current-repl repl-id)))
+  ((_msg state)
+   `#(noreply ,state)))
 
 (defun handle_call
   ;; Backend support
@@ -111,8 +116,12 @@
    `#(reply ,(mref repl 'autostart) ,state))
   ((`#(repl default) _from (= `#m(repl ,repl) state))
    `#(reply ,(mref repl 'default) ,state))
+  ((`#(repl extempore-banner) _from (= `#m(repl ,repl) state))
+   `#(reply ,(clj:get-in repl '(extempore banner text)) ,state))
   ((`#(repl extempore-prompt) _from (= `#m(repl ,repl) state))
    `#(reply ,(clj:get-in repl '(extempore prompt)) ,state))
+  ((`#(repl get-prompt) _from (= `#m(current-repl ,cur-repl repl ,repl) state))
+   `#(reply ,(clj:get-in repl `(,cur-repl prompt)) ,state))
   ;; Session support
   ((`#(session banner) _from (= `#m(session ,sess) state))
    `#(reply ,(clj:get-in sess '(banner text)) ,state))
@@ -176,8 +185,17 @@
 (defun default-repl ()
   (gen_server:call (SERVER) `#(repl default)))
 
+(defun extempore-banner ()
+  (gen_server:call (SERVER) `#(repl extempore-banner)))
+
 (defun extempore-prompt ()
   (gen_server:call (SERVER) `#(repl extempore-prompt)))
+
+(defun prompt()
+  (gen_server:call (SERVER) `#(repl get-prompt)))
+
+(defun set-repl (repl-id)
+  (gen_server:cast (SERVER) `#(repl set ,repl-id)))
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   session API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
