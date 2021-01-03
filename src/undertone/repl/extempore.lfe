@@ -14,6 +14,7 @@
    (init 1)
    (handle_call 3)
    (handle_cast 2)
+   (handle_continue 2)
    (handle_info 2)
    (terminate 2)
    (code_change 3))
@@ -42,6 +43,9 @@
 
 (defun start_link ()
   (log-info "Starting LFE/undertone REPL server ...")
+  (process_flag 'trap_exit 'true)
+  (undertone.server:set-repl 'extempore)
+  (undertone.repl.extempore.util:display-banner)
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)
@@ -55,7 +59,7 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (state)
-   `#(ok ,state))
+   `#(ok ,state #(continue reader)))
 
 (defun handle_cast
   ((_msg state)
@@ -70,8 +74,18 @@
   ((`#(echo ,msg) _from state)
    `#(reply ,msg ,state))
   ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+  ((msg _from state)
+   `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
+
+(defun handle_continue
+  (('reader state)
+   `#(noreply ,state #(continue #(evaler ,(undertone.repl.extempore.reader:read)))))
+  ((`#(evaler ,sexp) state)
+   (io:format "Got sexp: ~p~n" `(,sexp))
+   `#(noreply ,state #(continue reader)))
+  ;; Fall-through
+  ((msg state)
+   `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
 
 (defun handle_info
   ((`#(EXIT ,_from normal) state)
@@ -104,9 +118,9 @@
 (defun echo (msg)
   (gen_server:call (SERVER) `#(echo ,msg)))
 
-;;;;;::=------------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   simple, function-based approach   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=------------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun run ()
   (undertone.repl.extempore.looper:loop))

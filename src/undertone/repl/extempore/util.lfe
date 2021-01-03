@@ -1,5 +1,6 @@
 (defmodule undertone.repl.extempore.util
   (export
+   (display-banner 0)
    (extract-prev-cmd 1)
    (get-cmd 1)
    (get-sess-list 1)
@@ -7,6 +8,9 @@
    (print-prev-line 2)
    (show-prev 1)))
 
+(defun display-banner ()
+  (io:format "~s" `(,(undertone.server:extempore-banner))))
+  
 (defun extract-prev-cmd
   ((`#(,_ ,elem))
    elem))
