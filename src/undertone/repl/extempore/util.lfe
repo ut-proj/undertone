@@ -4,13 +4,15 @@
    (extract-prev-cmd 1)
    (get-cmd 1)
    (get-sess-list 1)
+   (list-errors 1)
    (maybe-save-command 1)
    (print-prev-line 2)
+   (report-exception 3)
    (show-prev 1)))
 
 (defun display-banner ()
   (io:format "~s" `(,(undertone.server:extempore-banner))))
-  
+
 (defun extract-prev-cmd
   ((`#(,_ ,elem))
    elem))
@@ -29,6 +31,10 @@
          (idx (if (=< pos 0) 0 pos)))
     (lists:nthtail idx sess-list)))
 
+(defun list-errors (errors)
+  (lists:map (lambda (e) (io:format "~p~n" `(,e)))
+             errors))
+
 (defun maybe-save-command
   "Don't save the command if it's a re-run or if it's the same as the previous
   command."
@@ -37,8 +43,18 @@
           ((== src (get-cmd 1)) 'skip-history)
           ('true (undertone.server:session-insert (mref sexp 'source))))))
 
+(defun nocatch
+  (('throw `#(,term ,stack))
+   `#(#(nocatch ,term) ,stack))
+  ((_ reason)
+   reason))
+
 (defun print-prev-line (elem idx)
   (lfe_io:format "~p. ~s~n" `(,idx ,(extract-prev-cmd elem))))
+
+(defun report-exception (class reason stack)
+  (io:format "ERROR~nClass: ~p~nReason: ~p~nStacktrace: ~p~n"
+             `(,class ,reason ,stack)))
 
 (defun show-prev
   (('())

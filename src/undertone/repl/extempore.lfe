@@ -1,122 +1,81 @@
 (defmodule undertone.repl.extempore
-  (behaviour gen_server)
-  ;; gen_server implementation
+  ;; Server-based REPL approach
   (export
-   (start 0)
-   (start_link 0)
-   (stop 0))
-  ;; debug API
-  (export
-   (pid 0)
-   (echo 1))
-  ;; callback implementation
-  (export
-   (init 1)
-   (handle_call 3)
-   (handle_cast 2)
-   (handle_continue 2)
-   (handle_info 2)
-   (terminate 2)
-   (code_change 3))
+   (start 0))
   ;; Function-based REPL approach
   (export
    (run 0)))
 
 (include-lib "logjam/include/logjam.hrl")
+(include-lib "include/repl.lfe")
 
-;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   config functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun SERVER () (MODULE))
-(defun initial-state () `#m())
-(defun genserver-opts () '())
-(defun unknown-command (data)
-  `#(error ,(lists:flatten (++ "Unknown command: " data))))
-
-;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start ()
-  (start_link))
+  (spawn (lambda () (server))))
 
-(defun start_link ()
-  (log-info "Starting LFE/undertone REPL server ...")
+(defun server ()
+  (server (make-state name "extempore-repl")))
+
+(defun server (st)
   (process_flag 'trap_exit 'true)
+  (log-debug "Starting REPL server ...")
   (undertone.server:set-repl 'extempore)
   (undertone.repl.extempore.util:display-banner)
-  (gen_server:start_link `#(local ,(SERVER))
-                         (MODULE)
-                         (initial-state)
-                         (genserver-opts)))
+  (let ((evaler (undertone.repl.extempore.evaler:start st)))
+    (server-loop st evaler)))
 
-(defun stop ()
-  (gen_server:call (SERVER) 'stop))
+(defun server-loop
+  (((= (match-state prompt p) st) evaler)
+   (let* ((p (if (=/= p 'undefined) p (set-prompt)))
+          (st (update-state-prompt st p))
+          (`#(,result ,evaler) (undertone.repl.extempore.reader:read
+                                st evaler)))
+     (case result
+       (`#(ok ,sexp)
+        (let ((`#(,evaler ,st) (send-eval sexp evaler st)))
+          (server-loop st evaler)))
+       (`#(error ,error)
+        (undertone.repl.extempore.util:list-errors `(,error))
+        (server-loop st evaler))))))
 
-;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   callback implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   support / utility functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun init (state)
-   `#(ok ,state #(continue reader)))
+;;; prompt stuff
 
-(defun handle_cast
-  ((_msg state)
-   `#(noreply ,state)))
+(defun node-prompt (prompt)
+  (let ((node (atom_to_list (node))))
+    (case (re:run prompt "~node")
+      ('nomatch (list "(" node (list ")" prompt)))
+      (_ (list "" (re:replace prompt  "~node" node '(#(return list))) "")))))
 
-(defun handle_call
-  ;; Stop
-  (('stop _from (= `#m(session ,sess) state))
-   (ets:delete (mref sess 'table))
-   `#(stop normal ok ,state))
-  ;; Testing / debugging
-  ((`#(echo ,msg) _from state)
-   `#(reply ,msg ,state))
-  ;; Fall-through
-  ((msg _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
+(defun set-prompt ()
+  (let ((default-prompt (undertone.server:prompt)))
+    (case (is_alive)
+      ('true (io_lib:format "~s~s~s" `(,(node-prompt default-prompt))))
+      ('false (let ((prompt (re:replace default-prompt "~node" "" '(#(return list)))))
+                (io_lib:format "~s" `(,prompt)))))))
 
-(defun handle_continue
-  (('reader state)
-   `#(noreply ,state #(continue #(evaler ,(undertone.repl.extempore.reader:read)))))
-  ((`#(evaler ,sexp) state)
-   (io:format "Got sexp: ~p~n" `(,sexp))
-   `#(noreply ,state #(continue reader)))
-  ;; Fall-through
-  ((msg state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
+;;; reader stuff
 
-(defun handle_info
-  ((`#(EXIT ,_from normal) state)
-   `#(noreply ,state))
-  ((`#(EXIT ,pid ,reason) state)
-   (log-notice "Process ~p exited! (Reason: ~p)~n" `(,pid ,reason))
-   `#(noreply ,state))
-  ((_msg state)
-   `#(noreply ,state)))
-
-(defun terminate (_reason _state)
-  'ok)
-
-(defun code_change (_old-version state _extra)
-  `#(ok ,state))
-
-;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   REPL API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TBD
-
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun pid ()
-  (erlang:whereis (SERVER)))
-
-(defun echo (msg)
-  (gen_server:call (SERVER) `#(echo ,msg)))
+(defun send-eval (form evaler st)
+  (! evaler `#(eval-expr ,(self) ,form))
+  (receive
+    (`#(eval-value ,evaler ,_val ,st)
+     `#(,evaler ,st))
+    (`#(eval-error ,evaler ,class)
+     (receive
+       (`#(EXIT ,evaler #(,reason ,stack))
+        (undertone.repl.extempore.util:report-exception class reason stack)))
+     `#(,(undertone.repl.extempore.evaler:start st) ,st))
+    (`#(EXIT ,evaler ,error)
+     ;; the eval process was exited or killed
+     (undertone.repl.extempore.util:report-exception 'error error '())
+     `#(,(undertone.repl.extempore.evaler:start st) ,st))))
 
 ;;;;;::=-----------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   simple, function-based approach   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

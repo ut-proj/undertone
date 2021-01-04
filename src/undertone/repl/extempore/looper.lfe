@@ -7,7 +7,7 @@
 (defun loop ()
   (log-debug "Looping REPL ...")
   (undertone.server:set-repl 'extempore)
-  (io:format "~s" `(,(undertone.server:extempore-banner)))
+  (undertone.repl.extempore.util:display-banner)
   (loop 'start))
 
 (defun loop
