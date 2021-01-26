@@ -1,0 +1,72 @@
+;;;; Moog minimoog iPad app MIDI control change code definitions
+;;;;
+;;;; These are not provided by the manufacturer or application developer; rather
+;;;; they are supplied by the user. The mapping below is based upon the mapping
+;;;; created in the ticket here:
+;;;; * https://github.com/ut-proj/undertone/issues/66
+
+;;; Controllers Section
+
+(define ctl-tune 1)
+(define ctl-glide 2)
+(define ctl-mod-mix 3)
+(define ctl-osc-3-filter 4)
+(define ctl-noise-lf0 5)
+(define ctl-sco-mod 6)
+
+;;; Oscillator Bank Section
+
+(define osc-1-range 7)
+(define osc-1-wave 8)
+(define osc-2-range 9)
+(define osc-2-tune 10)
+(define osc-2-wave 11)
+(define osc-3-ctl 12)
+(define osc-3-range 13)
+(define osc-3-tune 14)
+(define osc-3-wave 15)
+
+;;; Mixer Section
+
+(define mix-osc-1-vol 16)
+(define mix-osc-1-toggle 17)
+(define mix-ext-input-toggle 18)
+(define mix-ext-input-vol 19)
+(define mix-osc-2-vol 20)
+(define mix-osc-2-toggle 21)
+(define mix-noise-toggle 22)
+(define mix-noise-vol 23)
+(define mix-noise-type 24)
+(define mix-osc-3-vol 25)
+(define mix-osc-3-toggle 26)
+
+;;; Modifiers Section
+
+(define mod-filter-toggle 27)
+;; These switches vary the eff  ect of the keyboard tracking, where the filter
+;; section is aff  ected by the pitch of note played:
+;; * 1 & 2 off - no keyboard tracking effect
+;; * 1 & 2 on - maximum effect
+;; * 1 on only - 1/3 of maximum effect
+;; * 2 on only - 2/3 of maximum effect
+(define mod-key-ctl-toggle-1 28) , 
+(define mod-key-ctl-toggle-2 29)
+(define mod-cutoff-freq 30)
+(define mod-filter-emphasis 31)
+(define mod-filter-contour 32)
+(define mod-filter-attach 33)
+(define mod-filter-decay 34)
+(define mod-filter-sustain 35)
+(define mod-loud-attack 36)
+(define mod-loud-decay 37)
+(define mod-loud-sustain 38)
+
+;;; Wheel Section
+
+(define lfo-rate 39)
+(define glide-toggle 40)
+(define decay-toggle 41)
+
+;;; Volume Section
+
+(define volume 42)
