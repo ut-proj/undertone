@@ -49,7 +49,7 @@
 ;; * 1 & 2 on - maximum effect
 ;; * 1 on only - 1/3 of maximum effect
 ;; * 2 on only - 2/3 of maximum effect
-(define mod-key-ctl-toggle-1 28) , 
+(define mod-key-ctl-toggle-1 28)
 (define mod-key-ctl-toggle-2 29)
 (define mod-cutoff-freq 30)
 (define mod-filter-emphasis 31)
