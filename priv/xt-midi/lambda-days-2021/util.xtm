@@ -2,7 +2,8 @@
 
 (define random-volume
   (lambda ()
-    (random 40 60 80 100)))
+    ;;(random 40 60 80 100)
+    100))
 
 (define drop
   (lambda (n xs)
@@ -22,6 +23,9 @@
     (if (equal? '() lst)
         '()
         (cons (take n lst) (partition n (drop n lst))))))
+
+(define (circular-list . objects)
+  (append objects objects))
 
 (define loaded-utils
   (lambda ()

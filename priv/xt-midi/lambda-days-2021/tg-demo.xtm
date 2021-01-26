@@ -41,121 +41,49 @@
 (define track8-chan 7)
 (define track9-chan 8)
 
-(define play0
-  (lambda (beat)
-    (play-seq beat 4 track1-chan bass-prog0)
-    (play-seq beat 4 track2-chan bass-prog0)
-    (play-seq beat 4 track3-chan bass-prog0)
-    (play-seq beat 4 track4-chan bass-prog0)
-    (play-chords beat 4 track5-chan chords-prog0)
-    (play-chords beat 4 track6-chan chords-prog0)
-    (play-random beat 2 2 track8-chan chords-prog0)))
-
-(define play1
-  (lambda (beat)
-    (play-seq beat 4 track1-chan bass-prog1)
-    (play-seq beat 4 track2-chan bass-prog1)
-    (play-seq beat 4 track3-chan bass-prog1)
-    (play-seq beat 4 track4-chan bass-prog1)
-    (play-chords beat 4 track5-chan chords-prog1)
-    (play-chords beat 4 track6-chan chords-prog1)
-    (play-seq beat 1 track7-chan prog1)
-    (play-random beat 2 2 track8-chan chords-prog1)
-    (play-random beat 2 2 track9-chan chords-prog1)))
-
-(define play2
-  (lambda (beat)
-    (play-seq beat 4 track1-chan bass-prog1)
-    (play-seq beat 4 track2-chan bass-prog1)
-    (play-seq beat 2 track3-chan bass-prog2)
-    (play-seq beat 2 track4-chan bass-prog2)
-    (play-chords beat 2 track5-chan chords-prog2)
-    (play-chords beat 2 track6-chan chords-prog2)
-    (play-seq beat 1 track7-chan prog2)
-    (play-random beat 0.5 4 track8-chan chords-prog2)
-    (play-random beat 0.5 4 track9-chan chords-prog2)))
-
-(define play3
-  (lambda (beat)
-    (play-seq beat 2 track1-chan bass-prog3)
-    (play-seq beat 2 track2-chan bass-prog3)
-    (play-seq beat 2 track3-chan bass-prog3)
-    (play-seq beat 2 track4-chan bass-prog3)
-    (play-chords beat 4 track5-chan chords-prog3)
-    (play-chords beat 4 track6-chan chords-prog3)
-    (play-seq beat 1 track7-chan prog3)
-    (play-random beat 0.5 8 track8-chan chords-prog3)
-    (play-random beat 0.5 8 track9-chan chords-prog3)))
-
-(define play4
-  (lambda (beat)
-    (play-seq beat 4 track1-chan bass-prog4)
-    (play-seq beat 4 track2-chan bass-prog4)
-    (play-seq beat 4 track3-chan bass-prog4)
-    (play-seq beat 4 track4-chan bass-prog4)
-    (play-chords beat 4 track5-chan chords-prog4)
-    (play-chords beat 4 track6-chan chords-prog4)
-    (play-seq beat 1 track7-chan prog3)
-    (play-random beat 0.25 16 track8-chan chords-prog4)
-    (play-random beat 0.25 16 track9-chan chords-prog4)))
-
-(play0 (*metro* 'get-beat 4))
-(play1 (*metro* 'get-beat 4))
-(play2 (*metro* 'get-beat 4))
-(play3 (*metro* 'get-beat 4))
-(play4 (*metro* 'get-beat 4))
-
-(*metro* 'set-tempo 72)
-
-(play (*metro* 'get-beat 4))
+(define seq-1 (list c3 c4 c3 c4 a#3 g3))
+(define seq-1 (list c3 c3 a#3 g3))
+(define seq-1 (list c3 c3 a#3 g3 c4 c4))
+(define seq-1 (list c3 c3 a#3 g3 c4 c3 c4 g3))
 
 (define play
   (lambda (beat)
-    (play-seq beat 1 track1-chan prog2)))
+    (play-seq beat 4 track1-chan seq-1)))
 
-(define start
-  (lambda (beat dur progs)
-    (*metro (+ beat
-               (* .5 dur (foldl (lambda (acc x) (+ acc (length x))) 0 progs))))))
 
-(define play
-  (lambda ()
-    (let ((beat (*metro* 'get-beat 4)))
-      (callback beat 'play1 beat)
-;      (callback (start beat 4 (list prog1)) 'play2 beat)
-      (callback (start beat 4 (list prog1)) 'play3 beat)
-      (callback (start beat 4 (list prog1 prog3)) 'play1 beat)
-;      (callback (*metro* (+ beat s5-start) 'play4 beat))
-;      (callback (*metro* (+ beat (length prog4))) 'play1 beat)
-;      (callback (*metro* (+ beat (length prog1))) 'play2 beat)
-;      (callback (*metro* (+ beat (length prog2))) 'play3 beat)
-;      (callback (*metro* (+ beat (length prog3))) 'play1 beat)
-;      (callback (*metro* (+ beat (length prog1))) 'play4 beat)
-      )))
+(play-seq (*metro* 'get-beat 4) 2 track1-chan seq-1)
 
-;(define song (append prog0
-;                     prog1
-;                     prog2
-;                     prog3
-;                     prog1
-;                     prog4
-;                     prog1
-;                     prog2
-;                     prog3
-;                     prog1
-;                     prog2
-;                     prog2))
+(play (*metro* 'get-beat 2))
 
-(define play-c
-  (lambda ()
-    (let ((beat (*metro* 'get-beat 4)))
-      (play-seq beat 4 track1-chan bass-prog1)
-      (play-seq beat 4 track2-chan bass-prog1)
-      (play-seq beat 2 track3-chan bass-prog2)
-      (play-seq beat 2 track4-chan bass-prog2)
-      (play-chords beat 4 track5-chan chords-prog2)
-      (play-chords beat 4 track6-chan chords-prog2)
-      (play-seq beat 1 track7-chan prog2)
-      (play-random beat 0.5 8 track8-chan chords-prog2)
-      (play-random beat 0.5 8 track9-chan chords-prog2)
-      )))
+
+(define midi-loop
+  (lambda (beat dur seq-1)
+    (mplay *midiout*
+           (car seq-1)
+           80
+           dur
+           0)
+    (callback (*metro* (+ beat (* 1 dur)))
+              'midi-loop
+              (+ beat dur)
+              dur
+              (append (cdr seq-1) (list (car seq-1))))))
+
+(midi-loop (*metro* 'get-beat 4) 1/2 seq-1)
+
+(*metro* 'set-tempo 108)
+
+(define midi-loop
+  (lambda (beat dur) #t))
+
+(define (circular-list . objects)
+  (append objects objects))
+
+
+(define play-seq-2
+  (lambda (time plst)
+    (mplay *midiout* (car plst) 80 11025 track1-chan)
+    (if (not (null? (cdr plst)))
+        (callback (+ time 10000) 'play-seq-2 (+ time 11025) (cdr plst)))))
+
+(play-seq-2 (now) seq-1)
