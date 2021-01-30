@@ -24,6 +24,7 @@
   (undertone.sup:start_link))
 
 (defun stop ()
+  (log-notice "Stopping undertone application ...")
   'ok)
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

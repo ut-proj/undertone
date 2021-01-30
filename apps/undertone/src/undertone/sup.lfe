@@ -40,7 +40,9 @@
   ;;     - whether a given REPL should be started
   ;;     - etc.
   `#(ok #(,(sup-flags)
-          (,(child 'undertone.server 'start_link '())))))
+          (,(child 'undertone.server 'start_link '())
+           ;; XXX do a check here to see if the backend is enabled
+           ,(child 'undertone.extempore 'start_link '())))))
 
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   private functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
