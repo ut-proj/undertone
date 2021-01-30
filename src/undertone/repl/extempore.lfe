@@ -20,6 +20,7 @@
 (defun eval-dispatch
   (((= `#m(tokens ,tokens) sexp))
    (case tokens
+     ;; Built-ins
      (`("call" . ,_) (xt-blocking-eval sexp))
      ('("check-xt") 'check-xt)
      ('("eom") 'term)
@@ -28,6 +29,11 @@
      ('("help") 'help)
      (`("load" ,file) `#(load ,file))
      ('("quit") 'quit)
+     ('("restart") 'restart)
+     ('("term") 'term)
+     ('("v") 'version)
+     ('("version") 'version)
+     ;; Session commands
      (`("rerun" ,idx) `#(rerun ,idx))
      (`("rerun" ,start ,end) `#(rerun ,start ,end))
      ('("sess") 'sess)
@@ -35,9 +41,7 @@
      (`("sess-line" ,idx) `#(sess-line ,idx))
      (`("sess-load" ,file) `#(sess-load ,file))
      (`("sess-save" ,file) `#(sess-save ,file))
-     ('("term") 'term)
-     ('("v") 'version)
-     ('("version") 'version)
+     ;; Fall-through
      (_ (xt-eval sexp)))))
 
 (defun repl-eval (sexp)
@@ -66,12 +70,20 @@
 
 (defun print (result)
   (case result
+    ;; No-op
     ('() 'ok)
-    ('check-xt (check-extempore))
     ('empty 'ok)
+    ;; Built-ins
+    ('check-xt (check-extempore))
     ('help (help))
     (`#(load ,file) (load file))
     ('quit 'ok)
+    ('restart (progn
+                (log-notice "Restarting the Extempore binary ...")
+                (undertone.extempore:stop)))
+    ('term (xt.msg:async ""))
+    ('version (version))
+    ;; Session
     (`#(rerun ,idx) (rerun (list_to_integer idx)))
     (`#(rerun ,start ,end) (rerun (list_to_integer start)
                                   (list_to_integer end)))
@@ -80,8 +92,7 @@
     (`#(sess-line ,idx) (sess-line (list_to_integer idx)))
     (`#(sess-load ,file) (undertone.server:session-load file))
     (`#(sess-save ,file) (undertone.server:session-save file))
-    ('term (xt.msg:async ""))
-    ('version (version))
+    ;; Fall-through
     (_ (lfe_io:format "~p~n" `(,result))))
   result)
 

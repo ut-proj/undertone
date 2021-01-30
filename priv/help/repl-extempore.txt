@@ -15,6 +15,7 @@ Built-in functions:
 (load file)   -- read the code in the given file and load in the current
                  Extempore session
 (quit)        -- quit the Extempore REPL and return to the LFE REPL
+(restart)     -- restart the managed Extempore OS process
 (term)        -- send message-terminating character sequence to force Extempore
                  end-of-message (useful when troubleshooting)
 (v)           -- alias for '(version)'
