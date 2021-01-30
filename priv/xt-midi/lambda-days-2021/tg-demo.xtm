@@ -16,8 +16,8 @@
 ;;   (load "priv/xt-midi/lambda-days-2021/notes.xtm")
 
 ;; From Extempore, you can do:
-(define prefix "/Users/dmcgreggor/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
-;;(define prefix "/Users/oubiwann/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
+;;(define prefix "/Users/dmcgreggor/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
+(define prefix "/Users/oubiwann/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
 
 (sys:load (string-append prefix "init.xtm"))
 (sys:load (string-append prefix "util.xtm"))
@@ -30,7 +30,8 @@
 
 (pm_print_devices)
 
-(define primary-midi-device-id 4)
+;;(define primary-midi-device-id 4)
+(define primary-midi-device-id 3)
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
 
 (define midi-chan-1 0)
@@ -43,31 +44,35 @@
 (define seq-1 (list c4 c3 a#3 g3))
 (define seq-1 (list c4 c3))
 
-(define beats-per-measure 4)
+(define seq-1-pulse (list 127 1 1 1 1 1))
+
+(define beats-per-measure 8)
 (define note-timing 1/2)
 
 (*metro* 'set-tempo 108)
 
 (define midi-loop
-  (lambda (beat dur plst)
+  (lambda (beat dur nlst plst)
     (mplay *midiout*
+           (car nlst)
            (car plst)
-           80
            dur
            midi-chan-1)
-    (if (null? (cdr plst))
+    (if (null? (cdr nlst))
         (callback (*metro* (+ beat (* 1 dur)))
                   'midi-loop
                   (+ beat dur)
                   note-timing
-                  seq-1)
+                  seq-1
+                  seq-1-pulse)
         (callback (*metro* (+ beat (* 1 dur)))
                   'midi-loop
                   (+ beat dur)
                   note-timing
+                  (cdr nlst)
                   (cdr plst)))))
 
-(midi-loop (*metro* 'get-beat beats-per-measure) note-timing seq-1)
+(midi-loop (*metro* 'get-beat beats-per-measure) note-timing seq-1 seq-1-pulse)
 
 (define midi-loop
   (lambda (beat dur plist) #t))
@@ -96,7 +101,7 @@
 (define wet-level-delay 91)
 (define wel-level-chorous 93)
 
-(define cc-midi-chan-1 1)
+(define cc-midi-chan-1 0)
 
 (define midi-cc-loop
   (lambda (beat cc plst)
@@ -122,6 +127,8 @@
 (define cc-beats-per-measure 12)
 
 (midi-cc-loop (*metro* 'get-beat cc-beats-per-measure) cc cc-vals)
+
+(send-midi-cc (now) *midiout* cc 15 cc-midi-chan-1)
 
 (define midi-cc-loop
   (lambda (beat cc plist) #t))
