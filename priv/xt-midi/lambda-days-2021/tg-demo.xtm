@@ -28,62 +28,100 @@
 ;; Now you're ready to set up the MIDI channels (coupled to tracks in the DAW)
 ;; for the score ... and play it:
 
-(define primary-midi-device-id 5)
+(pm_print_devices)
+
+(define primary-midi-device-id 4)
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
 
-(define track1-chan 0)
-(define track2-chan 1)
-(define track3-chan 2)
-(define track4-chan 3)
-(define track5-chan 4)
-(define track6-chan 5)
-(define track7-chan 6)
-(define track8-chan 7)
-(define track9-chan 8)
+(define midi-chan-1 0)
 
 (define seq-1 (list c3 c4 c3 c4 a#3 g3))
-(define seq-1 (list c3 c3 a#3 g3))
-(define seq-1 (list c3 c3 a#3 g3 c4 c4))
-(define seq-1 (list c3 c3 a#3 g3 c4 c3 c4 g3))
+(define seq-1 (list c3 c4 c3 c4 a#3 g3 a#3 g3))
+;(define seq-1 (list c3 c3 a#3 g3 c4 c3 c4 g3))
+(define seq-1 (list c3 c3 a#3 g3 c4 c4 a#3 g3))
+(define seq-1 (list c3 c3 c4 c4 a#3 g3))
+(define seq-1 (list c4 c3 a#3 g3))
+(define seq-1 (list c4 c3))
 
-(define play
-  (lambda (beat)
-    (play-seq beat 4 track1-chan seq-1)))
-
-
-(play-seq (*metro* 'get-beat 4) 2 track1-chan seq-1)
-
-(play (*metro* 'get-beat 2))
-
-
-(define midi-loop
-  (lambda (beat dur seq-1)
-    (mplay *midiout*
-           (car seq-1)
-           80
-           dur
-           0)
-    (callback (*metro* (+ beat (* 1 dur)))
-              'midi-loop
-              (+ beat dur)
-              dur
-              (append (cdr seq-1) (list (car seq-1))))))
-
-(midi-loop (*metro* 'get-beat 4) 1/2 seq-1)
+(define beats-per-measure 4)
+(define note-timing 1/2)
 
 (*metro* 'set-tempo 108)
 
 (define midi-loop
-  (lambda (beat dur) #t))
+  (lambda (beat dur plst)
+    (mplay *midiout*
+           (car plst)
+           80
+           dur
+           midi-chan-1)
+    (if (null? (cdr plst))
+        (callback (*metro* (+ beat (* 1 dur)))
+                  'midi-loop
+                  (+ beat dur)
+                  note-timing
+                  seq-1)
+        (callback (*metro* (+ beat (* 1 dur)))
+                  'midi-loop
+                  (+ beat dur)
+                  note-timing
+                  (cdr plst)))))
 
-(define (circular-list . objects)
-  (append objects objects))
+(midi-loop (*metro* 'get-beat beats-per-measure) note-timing seq-1)
 
+(define midi-loop
+  (lambda (beat dur plist) #t))
 
-(define play-seq-2
-  (lambda (time plst)
-    (mplay *midiout* (car plst) 80 11025 track1-chan)
-    (if (not (null? (cdr plst)))
-        (callback (+ time 10000) 'play-seq-2 (+ time 11025) (cdr plst)))))
+(define cc-vals (list 0 10 20 30 40 50 60 70 80 100 120))
+(define cc-vals (list 0.0 0.25 0.5 0.25 0.0))
 
-(play-seq-2 (now) seq-1)
+(define general-volume 7)
+(define cutoff-filter-3 16)
+(define resonance-filter-3 17)
+(define cutoff-filter-2 18)
+(define resonance-filter-2 19)
+(define resonance-filter-1 71)
+(define release-time-env-1 72)
+(define attack-time-env-1 73)
+(define cutoff-filter-1 74)
+(define decay-time-env-1 75)
+(define rate-lfo-1 76)
+(define anount-fm-1-filter-1 77)
+(define sustain-level-env-1 79)
+(define attack-time-vca-1 80)
+(define decay-time-vca-1 81)
+(define sustain-level-vca-1 82)
+(define release-time-vca-1 83)
+(define vca-1-soft-clip 85)
+(define wet-level-delay 91)
+(define wel-level-chorous 93)
+
+(define cc-midi-chan-1 1)
+
+(define midi-cc-loop
+  (lambda (beat cc plst)
+    (mcc *midiout*
+         cc
+         (car plst)
+         cc-midi-chan-1)
+    (if (null? (cdr plst))
+        (callback (*metro* beat)
+                  'midi-cc-loop
+                  beat
+                  cc
+                  cc-vals)
+        (callback (*metro* beat)
+                  'midi-cc-loop
+                  beat
+                  cc
+                  (cdr plst)))))
+
+(define cc cutoff-filter-1)
+(define cc resonance-filter-1)
+
+(define cc-beats-per-measure 12)
+
+(midi-cc-loop (*metro* 'get-beat cc-beats-per-measure) cc cc-vals)
+
+(define midi-cc-loop
+  (lambda (beat cc plist) #t))
