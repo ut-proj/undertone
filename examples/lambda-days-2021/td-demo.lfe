@@ -45,12 +45,35 @@
 (xt.midi:cc (mupd opts 'cc-code (cutoff-filter-1) 'cc-value 20))
 (xt.midi:cc-off (mupd opts 'cc-code (resonance-filter-1)))
 
+;; Adjust volume for increase due to effects
+(xt.midi:cc (mupd opts 'cc-code (general-volume) 'cc-value 70))
+
+;; Initialize delay effect
+(xt.midi:cc (mupd opts 'cc-code (wet-level-delay) 'cc-value 0))
+(xt.midi:cc (mupd opts 'cc-code (delay-tempo-sync-midi) 'cc-value 127))
+(xt.midi:cc (mupd opts 'cc-code (rate-left-delay) 'cc-value 90))
+(xt.midi:cc (mupd opts 'cc-code (rate-right-delay) 'cc-value 108))
+
+;; Initialize chorous effect
+(xt.midi:cc (mupd opts 'cc-code (wel-level-chorous) 'cc-value 0))
+(xt.midi:cc (mupd opts 'cc-code (chorous-vca-1) 'cc-value 0))
+
+;; Start playing the seqence
 (xt.seq:start opts)
 
-(set opts (mupd opts 'notes seq2
-                     'pulses pulse2
-                     'beats-per-measure 4))
+;; Add in the chorous
+(xt.midi:cc (mupd opts 'cc-code (wel-level-chorous) 'cc-value 65))
 
-(xt.seq:set-midi-notes! opts)
+;; Add in the delay
+(xt.midi:cc (mupd opts 'cc-code (wet-level-delay) 'cc-value 60))
+
+;; Switch to other sequences
+(xt.seq:set-midi-notes! (mupd opts 'notes seq5))
+
+(xt.seq:set-midi-notes! (mupd opts 'notes seq6 'pulses pulse3))
+
+(xt.seq:set-midi-notes! (mupd opts 'notes seq7 'pulses pulse4))
+
+(xt.seq:set-midi-notes! (mupd opts 'notes seq2 'pulses pulse2))
 
 (xt.seq:stop opts)
