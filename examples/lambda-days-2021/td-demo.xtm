@@ -16,8 +16,8 @@
 ;;   (load "priv/xt-midi/lambda-days-2021/notes.xtm")
 
 ;; From Extempore, you can do:
-;;(define prefix "/Users/dmcgreggor/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
-(define prefix "/Users/oubiwann/lab/lfe/undertone/priv/xt-midi/lambda-days-2021/")
+;;(define prefix "/Users/dmcgreggor/lab/lfe/undertone/examples/lambda-days-2021/")
+(define prefix "/Users/oubiwann/lab/lfe/undertone/examples/lambda-days-2021/")
 
 (sys:load (string-append prefix "init.xtm"))
 (sys:load (string-append prefix "util.xtm"))
