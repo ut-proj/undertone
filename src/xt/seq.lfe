@@ -61,7 +61,7 @@
       midi-device-name ,midi-device-name
       midi-device-id ,midi-device-id
       midi-channel ,midi-channel
-      notes ,(seq-atoms->xt notes)
+      notes ,notes
       pulses ,pulses
       beats-per-minute ,bpmn
       beats-per-measure ,bpms
@@ -92,7 +92,7 @@
 (defun midi-notes (opts)
   (format "(define ~s-notes ~s)"
           `(,(mref opts 'name)
-            ,(mref opts 'notes))))
+            ,(seq-atoms->xt (mref opts 'notes)))))
 
 (defun midi-pulses (opts)
   (format "(define ~s-pulses '~w)"
