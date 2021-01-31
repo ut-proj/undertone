@@ -3,9 +3,7 @@
    (cc 1)
    (cc-off 1)
    (cc-on 1)
-   (cc-ramp 1)
-   (cc-ramp-down 1)
-   (cc-ramp-up 1)
+   (cc-ramp 4)
    (cc-sine 1)
    (init 0)
    (list-devices 0)
@@ -75,14 +73,27 @@
 (defun cc-on (midi-opts)
   (cc (mupd midi-opts 'cc-value 127)))
 
-(defun cc-ramp (midi-opts)
-  'tbd)
+(defun cc-ramp (midi-opts start-val end-val duration)
+  (let* ((sq (seq start-val end-val))
+         (steps (length sq))
+         (incr (/ (* 1000 duration) steps)))
+    (lists:foldl
+     (lambda (val acc)
+       (let ((sum (+ acc incr)))
+         (log-debug
+          (timer:apply_after (round sum)
+                             'xt.midi
+                             'cc
+                             `(,(mupd midi-opts 'cc-value val))))
+         sum))
+     0
+     sq))
+  'ok)
 
-(defun cc-ramp-down (midi-opts)
-  'tbd)
-
-(defun cc-ramp-up (midi-opts)
-  'tbd)
+(defun seq (start end)
+  (if (> end start)
+    (lists:seq start end)
+    (lists:reverse (lists:seq end start))))
 
 (defun cc-sine (midi-opts)
   'tbd)
