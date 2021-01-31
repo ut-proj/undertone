@@ -182,5 +182,5 @@
 
 ;; This function is for display purposes when used in the REPL
 ;; and needs to be the last function in the include file.
-(defun |-- loaded include: notes/midi --| ()
+(defun |-- loaded include: notes/freqs-mini-name --| ()
   'ok)
