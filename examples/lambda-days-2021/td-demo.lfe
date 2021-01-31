@@ -86,7 +86,15 @@
 
 (xt.seq:set-midi-notes! (mupd opts 'notes seq6 'pulses pulse3))
 
+;; Ramp-down delay
+
+;; Change oscillator to be a lower octave
+
 (xt.seq:set-midi-notes! (mupd opts 'notes seq7 'pulses pulse4))
+
+;; Change oscillators to be higher octaves
+
+;; Ramp-up delay
 
 (xt.seq:set-midi-notes! (mupd opts 'notes seq2 'pulses pulse2))
 
@@ -101,7 +109,9 @@
 (xt.seq:set-midi-notes! (mupd opts 'notes seq1 'pulses pulse1))
 
 ;; Ramp-down cutoff
+
 ;; Ramp-up pulse width
+
 ;; Ramp-up delay
 
 (xt.seq:stop opts)
