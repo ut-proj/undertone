@@ -6,6 +6,7 @@
   ;; API
   (export
    (connect 0)
+   (def 2)
    (set-tempo! 1)
    (sys-load 1)))
 
@@ -27,3 +28,7 @@
          (xt.lang:sexp "sys:load" (xt.lang:->xt xtm-file)))
     ('true #(true loaded))
     ('false #(false already-loaded))))
+
+(defun def (name val)
+  (xt.msg:async
+   (io_lib:format "(define ~p ~s)" `(,name ,val))))
