@@ -68,7 +68,9 @@
     msgs))
 
 (defun render-banner ()
-  (io:put_chars `(,(undertone.server:session-banner))))
+  ;; XXX do a backend check to see which backend is being used, and then call
+  ;;     the appropriate REPL server function for getting the banner
+  (io:put_chars `(,(undertone.xtrepl:session-banner))))
 
 (defun split-xt-packet (packet)
   (list-comp
