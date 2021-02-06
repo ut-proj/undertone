@@ -8,7 +8,9 @@
    (init 0)
    (list-devices 0)
    (stop 1)
-   (set-out-stream! 2)))
+   (create-out-stream 2)))
+
+(include-lib "logjam/include/logjam.hrl")
 
 (defun init ()
   (xt.msg:async
@@ -44,7 +46,7 @@
           (xt.lang:->xt 'dur)))
         (xt.lang:->xt 'true)))))
 
-(defun set-out-stream! (device-name device-id)
+(defun create-out-stream (device-name device-id)
   (xt.msg:async
    (xt.lang:sexp
     "define"
@@ -79,12 +81,12 @@
          (incr (/ (* 1000 duration) steps)))
     (lists:foldl
      (lambda (val acc)
-       (let ((sum (+ acc incr)))
-         (log-debug
-          (timer:apply_after (round sum)
-                             'xt.midi
-                             'cc
-                             `(,(mupd midi-opts 'cc-value val))))
+       (let* ((sum (+ acc incr))
+              (sched (timer:apply_after (round sum)
+                                        'xt.midi
+                                        'cc
+                                        `(,(mupd midi-opts 'cc-value val)))))
+         (log-debug "Scheduled: ~p" `(,sched))
          sum))
      0
      sq))
@@ -96,4 +98,4 @@
     (lists:reverse (lists:seq end start))))
 
 (defun cc-sine (midi-opts)
-  'tbd)
+  'not-implemented)
