@@ -1,4 +1,4 @@
-;;;; The part of this example that is responsible to actually playing the score.
+;;;; An undertone / Extempore demonstration of arpeggios
 ;;;;
 
 ;; For use in setting up song in the LFE undertone REPL, having executed the
