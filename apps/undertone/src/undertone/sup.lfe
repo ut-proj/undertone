@@ -1,10 +1,10 @@
 (defmodule undertone.sup
   (behaviour supervisor)
   (export
-    ;; supervisor implementation
-    (start_link 0)
-    ;; callback implementation
-    (init 1)))
+   ;; supervisor implementation
+   (start_link 0)
+   ;; callback implementation
+   (init 1)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -41,6 +41,7 @@
   ;;     - etc.
   `#(ok #(,(sup-flags)
           (,(child 'undertone.server 'start_link '())
+           ,(child 'undertone.xtrepl 'start_link '())
            ;; XXX do a check here to see if the backend is enabled
            ,(child 'undertone.extempore 'start_link '())))))
 
