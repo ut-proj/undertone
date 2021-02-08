@@ -25,6 +25,7 @@
     (echo 1)))
 
 (include-lib "logjam/include/logjam.hrl")
+(include-lib "include/notes/data.lfe")
 (include-lib "include/xt/options.lfe")
 
 (defun SERVER () (MODULE))
@@ -103,15 +104,39 @@
    `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
 
 (defun handle_info
+  ;; Extract MIDI data from packed bits
+  ((`#(,port #(data #(eol ,(binary (prefix bytes (size 7)) (rest bitstring))))) state)
+   (when (andalso (is_port port) (=:= prefix #"#(MIDI ")))
+   (let* ((packed (clj:-> rest
+                          (binary_to_list)
+                          (lists:sublist 1 (- (size rest) 1))
+                          (list_to_integer)))
+          (unpacked (midi-hash->map packed)))
+     (log-debug "packed: ~p" `(,packed))
+     (log-debug "note: ~p - channel: ~p - pitch: ~p - velocity: ~p - time: ~p"
+                (list (mref unpacked 'note-state)
+                      (mref unpacked 'channel)
+                      (mref unpacked 'pitch)
+                      (mref unpacked 'velocity)
+                      (mref unpacked 'time)))
+     ;; XXX we'll eventually communicate with a "recording" gen_server which
+     ;;     will, in turn, write the data to an ETS table; for more details,
+     ;;     see: https://github.com/ut-proj/undertone/issues/64
+     (log-notice unpacked)
+     `#(noreply ,state)))
+  ;; Port EOL-based messages
   ((`#(,port #(data #(eol ,msg))) state) (when (is_port port))
    (log-info (sanitize-extempore-msg msg))
    `#(noreply ,state))
+  ;; Port line-based messages
   ((`#(,port #(data #(,line-msg ,msg))) state) (when (is_port port))
    (log-info "Unknown line message:~p~s" `(,line-msg ,(sanitize-extempore-msg msg)))
    `#(noreply ,state))
+  ;; General port messages
   ((`#(,port #(data ,msg)) state) (when (is_port port))
    (log-info "Message from Extempore port:~n~s" `(,(sanitize-extempore-msg msg)))
    `#(noreply ,state))
+  ;; Exit-handling
   ((`#(,port #(exit_status ,exit-status)) state) (when (is_port port))
    (log-warn "~p: exited with status ~p" `(,port ,exit-status))
    `#(noreply ,state))
@@ -124,6 +149,7 @@
   ((`#(EXIT ,pid ,reason) state)
    (log-notice "Process ~p exited! (Reason: ~p)" `(,pid ,reason))
    `#(noreply ,state))
+  ;; Fall-through
   ((msg state)
    (log-debug "Unknwon info: ~p" `(,msg))
    `#(noreply ,state)))
@@ -145,7 +171,8 @@
 (defun start-extempore
   (((= `#m(args ,args binary ,bin) state))
    (let* ((port (erlang:open_port `#(spawn_executable ,bin)
-                                  `(use_stdio
+                                  `(binary
+                                    use_stdio
                                     exit_status
                                     #(line 1024)
                                     #(args ,args))))
@@ -203,8 +230,22 @@
 
 (defun sanitize-extempore-msg (msg)
   (clj:-> msg
+          (binary_to_list)
           (string:replace (++ "\\" "\n") "\n")
           (string:trim)))
+
+(defun midi-hash->map (hash)
+  (let* ((note-state (band hash #b1))
+         (channel (band (bsr hash 1) #b1111))
+         (pitch (band (bsr hash 5) #b111111))
+         (velocity (band (bsr hash 12) #b111111))
+         (time (band (bsr hash 19) #b11111111111111111111)))
+    `#m(note-state ,(if (== note-state 1) 'on 'off)
+        channel ,channel
+        pitch ,pitch
+        note ,(midi-lookup pitch)
+        velocity ,velocity
+        time ,time)))
 
 ;;; scratch
 

@@ -1,0 +1,47 @@
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libportmidi
+
+(sys:load "libs/external/portmidi.xtm")
+
+(pm_initialize)
+(pm_print_devices)
+
+(define *midi-in* (pm_create_input_stream 1))
+
+(bind-func midi_read_loop
+  "a callback loop to call Pm_Read on a midi input stream
+
+  This will pick up any incoming MIDI messages - handle them however you
+  like."
+  (let ((input_buffer:PmEvent* (zalloc PM_MIDI_BUFFER_SIZE))
+        (read_count 0)
+        (i:i32 0))
+    (lambda (input_stream:PmStream* time:i64 delta_t:double)
+      (set! read_count (Pm_Read input_stream input_buffer PM_MIDI_BUFFER_SIZE))
+      ;; (println "read_count:" read_count)
+      (if (> read_count 0)
+          (dotimes (i read_count)
+            (cond ((PmEvent_note_on_p (pref-ptr input_buffer i))
+                   (println "note: ON pitch:"
+                            (Pm_Message_Data1 (Pm_Event_Message (pref-ptr input_buffer i)))
+                            "velocity:"
+                            (Pm_Message_Data2 (Pm_Event_Message (pref-ptr input_buffer i)))
+                            "channel:"
+                            (Pm_Event_Channel (pref-ptr input_buffer i))))
+                  ((PmEvent_note_off_p (pref-ptr input_buffer i))
+                   (println "note: OFF pitch:"
+                            (Pm_Message_Data1 (Pm_Event_Message (pref-ptr input_buffer i)))
+                            "velocity:"
+                            (Pm_Message_Data2 (Pm_Event_Message (pref-ptr input_buffer i)))
+                            "channel:"
+                            (Pm_Event_Channel (pref-ptr input_buffer i))))
+                  (else
+                   (println i (pref-ptr input_buffer i))))))
+      (let ((next_time (+ time (convert (* 44100. delta_t)))))
+        (callback next_time midi_read_loop input_stream next_time delta_t)))))
+
+;; start the read loop
+(midi_read_loop *midi-in* (now) 0.01) ;; 100Hz
+
+(bitwise-arithmetic-shift-left 1 31)

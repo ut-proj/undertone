@@ -1,0 +1,234 @@
+;; XXX - convert this to LFE, a la xt.seq
+
+(sys:load "libs/external/portmidi.xtm")
+
+(pm_initialize)
+(pm_print_devices)
+
+(define *midi-in* (pm_create_input_stream 1))
+
+(bind-val midi_loop_enabled i32 1)
+
+(bind-func midi_to_bits
+  ""
+  (lambda (input_buffer:PmEvent* time:i64 last-time:i64 index:i32)
+    (let* ((note-state:i64 (convert (PmEvent_note_on_p (pref-ptr input_buffer index))))
+           (note-state-str (if (= note-state 1) "ON" "OFF"))
+           (chan:i64 (convert (Pm_Event_Channel (pref-ptr input_buffer index))))
+           (pitch:i64 (convert (Pm_Message_Data1 (Pm_Event_Message (pref-ptr input_buffer index)))))
+           (veloc:i64 (convert (Pm_Message_Data2 (Pm_Event_Message (pref-ptr input_buffer index)))))
+           (time-diff:i64 (- time last-time))
+           (time-mask:i64 1048575)
+           (masked-time:i64 (bitwise-and time time-mask))
+           (chan-shift:i64 1)
+           (pitch-shift:i64 5)
+           (veloc-shift:i64 12)
+           (time-shift:i64 19))
+      (printf "note: %s - channel: %d - pitch: %d - velocity: %d - time: %d (%d) - diff: %d\n"
+              note-state-str chan pitch veloc time masked-time time-diff)
+      (+ note-state
+         (bitwise-shift-left chan chan-shift)
+         (bitwise-shift-left pitch pitch-shift)
+         (bitwise-shift-left veloc veloc-shift)
+         (bitwise-shift-left masked-time time-shift)))))
+
+(bind-func midi_read_loop:[void]*
+  "a callback loop to call Pm_Read on a midi input stream
+
+  This will pick up any incoming MIDI messages - handle them however you
+  like."
+  (let ((input_buffer:PmEvent* (zalloc PM_MIDI_BUFFER_SIZE))
+        (read_count 0)
+        (i:i32 0))
+    (lambda (input_stream:PmStream* time:i64 delta_t:double last-time:i64)
+      (set! read_count (Pm_Read input_stream input_buffer PM_MIDI_BUFFER_SIZE))
+      ;; (println "read_count:" read_count)
+      (if (> read_count 0)
+          (dotimes (i read_count)
+            (cond ((PmEvent_note_on_p (pref-ptr input_buffer i))
+                   (printf "#(MIDI %d)" (midi_to_bits input_buffer time last-time i))
+                   (println ""))
+                  ((PmEvent_note_off_p (pref-ptr input_buffer i))
+                   (printf "#(MIDI %d)" (midi_to_bits input_buffer time last-time i))
+                   (println ""))
+                  (else
+                   (println i (pref-ptr input_buffer i))))))
+      (if (> midi_loop_enabled 0)
+          (let ((next_time (+ time (convert (* 44100. delta_t)))))
+            (callback next_time midi_read_loop input_stream next_time delta_t time))
+          void))))
+
+(bind-func stop_midi_read_loop:[void]*
+  (lambda ()
+    (set! midi_loop_enabled 0)
+    void))
+
+;; start the read loop
+(midi_read_loop *midi-in* (now) 0.01 (now)) ;; 100Hz
+
+(stop_midi_read_loop)
+
+(println (bitwise-shift-left 1 31))
+
+(bind-func AudioBuffer_data_b64
+  (lambda (ab:AudioBuffer*)
+    (let ((b64size:i64 0)
+          (datsize:i64 (* (AudioBuffer_frames ab) (AudioBuffer_channels ab) 4)))
+      (String (base64_encode (cast (tref ab 4) i8*) datsize (ref b64size))))))
+
+MIDI off/on: bit 0-1                                           1
+channel: 0-15                                              1111  - shift 1, cover 4
+pitch: 0-127                                        1111111      - shift 5, cover 7
+velocity: 0-127                              1111111             - shift 12, cover 7
+time: 0-1048575          11111111111111111111                    - shift 19, cover 20
+Total:                   111111111111111111111111111111111111111
+524287
+                                             0011000
+                                                    0101010
+                                                           0011
+                                                               0
+                                             0011000010101000110
+
+10000000000000000000000000000000000000000000000000000000000000000
+ 1111111111111111111111111111111111111111111111111111111111111111
+1111111000000000000
+       111111100000
+              11110
+                  1
+                            11111
+                        1111
+ 00000000000111111111111
+ 00000000000111111111111111111111
+            \___________|___|___/
+                  year  month day
+
+PACK:
+
+unsigned int time=0;
+time |= year << 9;
+time |= month << 5;
+time |= day;
+
+lfe> (integer_to_list (+ (bsl 24 12) (bsl 42 5) (bsl 3 1)) 2)
+"11000010101000110"
+
+UNPACK:
+
+int year  = (time >> 9) & 0b111111111111;
+int month = (time >> 5) & 0b1111;
+int day   = time & 0b11111;
+
+lfe> (integer_to_list (band (bsr #b0011000010101000110 12) #b111111) 2)
+"11000"
+lfe> (integer_to_list (band (bsr #b0011000010101000110 5) #b111111) 2)
+"101010"
+lfe> (integer_to_list (band (bsr #b0011000010101000110 1) #b1111) 2)
+"11"
+lfe> (integer_to_list (band #b0011000010101000110 #b1) 2)
+"0"
+
+"note: ON - channel: 0x0 - pitch: 0x3c - velocity: 0x1b"
+"#(MIDI 0x1b781)"
+
+"note: ON - channel: 0x0 - pitch: 0x3c - velocity: 0x24"
+"#(MIDI 0x24781)"
+
+"note: OFF - channel: 0x0 - pitch: 0x3c - velocity: 0x1b"
+"#(MIDI 0x1b780)"
+
+
+(io_lib:format "~p~p~n" (list #x3c #x1b))
+(list #x3c #x24)
+
+(integer_to_list #x3c 2)
+(integer_to_list #x1b 2)
+(integer_to_list #x24 2)
+
+(defun midi-hash->map (hash)
+  (let* ((note-state (band hash #b1))
+         (channel (band (bsr hash 1) #b1111))
+         (pitch (band (bsr hash 5) #b111111))
+         (velocity (band (bsr hash 12) #b111111))
+         (time (band (bsr hash 19) #b11111111111111111111)))
+    `#m(note-state ,(if (== note-state 1) 'on 'off)
+        channel ,channel
+        pitch ,pitch
+        velocity ,velocity
+        time ,time)))
+
+(integer_to_list (band (bsr #x1b781 12) #b111111) 10)
+(integer_to_list (band (bsr #x1b781 12) #b111111) 10)
+(integer_to_list (band (bsr #x24781 5) #b111111) 10)
+(integer_to_list (band (bsr #x24781 1) #b1111) 10)
+(integer_to_list (band #x24781 #b1) 10)
+
+2021-02-07 10:23:44 INFO <0.778.0> [undertone.extempore:handle_info/2:105] ▸ text="note: ON - channel: 0 - pitch: 48 - velocity: 24 - time: 104231374"
+2021-02-07 10:23:44 INFO <0.778.0> [undertone.extempore:handle_info/2:105] ▸ text="note: ON - channel: 0 - pitch: 51 - velocity: 29 - time: 104241517"
+
+(- 104241517 104231374)
+(- (band #b000000000000000000000000000000000000000000011111111111111111111 104241517)
+   (band #b000000000000000000000000000000000000000000011111111111111111111 104231374))
+
+
+"note: ON - channel: 0 - pitch: 60 - velocity: 24 - time: 11811036 (276700) - diff: 441"
+"#(MIDI -958298239)"
+"note: OFF - channel: 0 - pitch: 60 - velocity: 24 - time: 11822061 (287725) - diff: 441"
+"#(MIDI 527009664)"
+
+(let (((binary (msg bitstring) (end bitstring))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (io:format "msg: ~p~nend: ~p~n" `(,msg ,end)))
+
+msg: <<35,40,104,101,97,108,116,104,32,111,107,41,0>>
+end: <<>>
+
+(let (((binary (msg bitstring (size 12)) (rest bitstring))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (lfe_io:format "msg: ~p~nrest: ~p~n" `(,msg ,rest)))
+
+msg: #B(35 (2 (size 4)))
+rest: #B(134 134 86 22 199 70 130 6 246 178 144 (0 (size 4)))
+
+(let (((binary (msg bitstring (size 96)) (end bitstring (size 8)))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (io:format "msg: ~p~nend: ~p~n" `(,msg ,end)))
+
+msg: <<"#(health ok)">>
+end: <<0>>
+
+(let (((binary (msg bitstring (size 96)) (_ bitstring (size 8)))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (io:format "msg: ~p~n" `(,msg)))
+
+msg: <<"#(health ok)">>
+
+(let (((binary (msg bytes (size 12)) (_ bytes (size 1)))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (io:format "msg: ~p~n" `(,msg)))
+
+(let (((binary (msg bitstring (size 96)) (_ (size 8)))
+       #B(35 40 104 101 97 108 116 104 32 111 107 41 0)))
+  (io:format "msg: ~p~n" `(,msg)))
+
+msg: <<"#(health ok)">>
+
+(let (((binary (prefix bitstring (size 56)) (rest binary))
+       #B(35 40 77 73 68 73 32 56 57 55 50 49 56 52 51 51 41 0)))
+  (lfe_io:format "prefix: ~p~nrest: ~p~n" `(,prefix ,rest)))
+
+prefix: #"#(MIDI "
+rest: #B(56 57 55 50 49 56 52 51 51 41 0)
+
+(let (((binary (prefix bitstring (size 56)) (rest bitstring))
+       #B(35 40 77 73 68 73 32 56 57 55 50 49 56 52 51 51 41 0)))
+  (lfe_io:format "prefix: ~p~nrest: ~p~n" `(,prefix ,rest)))
+
+
+lfe> (binary (#b(35 40 104 101 97 108 116 104 32 111 107 41) bitstring) 0)
+#B(35 40 104 101 97 108 116 104 32 111 107 41 0)
+
+lfe> (binary 35 40 104 101 97 108 116 104 32 111 107 41 0)
+#B(35 40 104 101 97 108 116 104 32 111 107 41 0)
+
+lfe> #B(35 40 104 101 97 108 116 104 32 111 107 41 0)
+#B(35 40 104 101 97 108 116 104 32 111 107 41 0)
