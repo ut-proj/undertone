@@ -14,7 +14,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun xmit-delim () "\r\n")
-(defun rcv-delim () #b(0))
+(defun rcv-delim () #"0")
 
 (defun async (str)
   (log-debug "Casting: ~s" `(,str))
@@ -31,26 +31,24 @@
 ;;;::=-   Callbacks for tcp-client library   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun handle-packet (parsed)
-  (case parsed
-    ("Welcome to extempore!" (progn
-                               (timer:sleep 500)
-                               (render-banner)))
-    ("#(health ok)" (log-notice "Extempore TCP server connection healthy"))
-    (_ (progn
-         (log-debug "No special packet handling for parsed value")
-         'ok))))
-
 (defun parse-response
+  ;; Report when Extempore accepts the connections
+  (((binary (msg bytes (size 21)) (_ bytes (size 1))) _)
+   (when (=:= msg #"Welcome to extempore!"))
+   (progn (timer:sleep 500)
+          (render-banner)))
+  ;; Report a successful health check
+  (((binary (msg bytes (size 12)) (_ bytes (size 1))) _)
+   (when (=:= msg #"#(health ok)"))
+   (log-notice "Extempore TCP server connection healthy"))
+  ;; Fall-through
   ((packet `#(,reporter-mod ,reporter-func))
-   (log-debug "Got packet: ~p" `(,packet))
+   (log-debug "Calling reporter for data: ~p" `(,packet))
    (let* ((raw-msgs (split-xt-packet packet))
           (msgs (maybe-one-msg raw-msgs)))
      (list-comp
        ((<- x raw-msgs))
        (apply reporter-mod reporter-func `(,x)))
-     (log-debug "Parsed packet: ~p" `(,msgs))
-     (handle-packet msgs)
      msgs)))
 
 (defun report (data)
@@ -77,4 +75,3 @@
     ((<- x (when (=/= x #b()))
          (binary:split packet (rcv-delim) '(global))))
     (xt.lang:->lfe x)))
-
