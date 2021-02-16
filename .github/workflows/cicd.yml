@@ -37,7 +37,7 @@ jobs:
     - name: Run Tests
       run: rebar3 as test lfe ltest
     - name: Test Coverage
-      run: rebar3 as tests do proper -c, cover -v --min_coverage=0
+      run: rebar3 as test do proper -c, cover -v --min_coverage=0
     - name: Notify CI/CD Slack Channel
       uses: innocarpe/actions-slack@v1
       with:
