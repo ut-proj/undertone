@@ -13,7 +13,7 @@
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun read ()
-  (let ((sexp (undertone.sexp:readlines (undertone.server:prompt))))
+  (let ((sexp (undertone.sexp:readlines (undertone.xtrepl:prompt))))
     (log-debug "Got user input (sexp): ~p" `(,sexp))
     sexp))
 
@@ -90,8 +90,8 @@
     ('sess (sess))
     (`#(sess ,idx) (sess (list_to_integer idx)))
     (`#(sess-line ,idx) (sess-line (list_to_integer idx)))
-    (`#(sess-load ,file) (undertone.server:session-load file))
-    (`#(sess-save ,file) (undertone.server:session-save file))
+    (`#(sess-load ,file) (undertone.xtrepl:session-load file))
+    (`#(sess-save ,file) (undertone.xtrepl:session-save file))
     ;; Fall-through
     (_ (lfe_io:format "~p~n" `(,result))))
   result)
@@ -110,8 +110,8 @@
 
 (defun start ()
   (log-debug "Starting REPL ...")
-  (undertone.server:set-repl 'extempore)
-  (io:format "~s" `(,(undertone.server:extempore-banner)))
+  (undertone.xtrepl:set-repl 'extempore)
+  (io:format "~s" `(,(undertone.xtrepl:session-banner)))
   (loop 'start))
 
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,11 +136,11 @@
   (io:format "~n"))
 
 (defun sess ()
-  (sess (undertone.server:session-show-max)))
+  (sess (undertone.xtrepl:session-show-max)))
 
 (defun sess-line (n)
   (log-debug "Got session entries index: ~p" `(,n))
-  (show-prev (undertone.server:session n)))
+  (show-prev (undertone.xtrepl:session n)))
 
 (defun load (file-name)
   (let ((`#(ok ,data) (file:read_file file-name)))
@@ -172,7 +172,7 @@
    elem))
 
 (defun get-cmd (n)
-  (let ((last-cmd (undertone.server:session n)))
+  (let ((last-cmd (undertone.xtrepl:session n)))
     (case last-cmd
       ('() '())
       (_ (clj:-> last-cmd
@@ -180,7 +180,7 @@
                  (extract-prev-cmd))))))
 
 (defun get-sess-list (n)
-  (let* ((sess-list (undertone.server:session-list))
+  (let* ((sess-list (undertone.xtrepl:session-list))
          (pos (- (length sess-list) n))
          (idx (if (=< pos 0) 0 pos)))
     (lists:nthtail idx sess-list)))
@@ -191,7 +191,7 @@
   (((= `#m(tokens ,tkns source ,src) sexp))
    (cond ((== (car tkns) "rerun") 'skip-history)
           ((== src (get-cmd 1)) 'skip-history)
-          ('true (undertone.server:session-insert (mref sexp 'source))))))
+          ('true (undertone.xtrepl:session-insert (mref sexp 'source))))))
 
 (defun print-prev-line (elem idx)
   (lfe_io:format "~p. ~s~n" `(,idx ,(extract-prev-cmd elem))))

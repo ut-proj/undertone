@@ -243,7 +243,7 @@
     `#m(note-state ,(if (== note-state 1) 'on 'off)
         channel ,channel
         pitch ,pitch
-        note ,(midi-lookup pitch)
+        note ,(lookup-midi pitch)
         velocity ,velocity
         time ,time)))
 
