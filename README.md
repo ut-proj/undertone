@@ -16,6 +16,7 @@
 * [Presentations & Demos](#presentations--demos-)
 * [Build and Test](#build-and-test-)
 * [Usage Overview](#usage-overview-)
+* [Architecture](#architecture-)
 * [Documentation](#documentation-)
 * [License](#license-)
 
@@ -91,6 +92,12 @@ Usage examples have been moved here, due to the rapid accretion of content:
 * [A quick-start for Extempore in LFE](https://undertone.lfe.io/book/current/quick-start/extempore/index.html)
 * [SuperCollider via OSC](https://undertone.lfe.io/book/current/quick-start/osc/index.html#supercollider-a-hreftable-of-contentsa)
 
+## Architecture [&#x219F;](#table-of-contents)
+
+[![C4 architecture diagram: system context][sys-context]][sys-context]
+
+[![C4 architecture diagram: container][containers]][containers]
+
 ## Documentation [&#x219F;](#table-of-contents)
 
 There is an early-stage [documentation effort](https://github.com/cnbbooks/lfe-music-programming)
@@ -118,3 +125,5 @@ Copyright © 2020, Duncan McGreggor <oubiwann@gmail.com>.
 [github-tag-badge]: https://img.shields.io/github/tag/lfex/undertone.svg
 [github-downloads]: https://img.shields.io/github/downloads/lfex/undertone/total.svg
 [banner-image]: priv/images/banner-screenshot.png
+[sys-context]: priv/images/system-context.jpg
+[containers]: priv/images/containers.jpg
