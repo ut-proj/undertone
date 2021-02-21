@@ -35,15 +35,22 @@
 
 (defun init (_args)
   (log-info "Initializing children ...")
-  ;; XXX maybe perform some configurable checks here along the lines of:
-  ;;     - which REPLs are supported
-  ;;     - whether a given REPL should be started
-  ;;     - etc.
-  `#(ok #(,(sup-flags)
-          (,(child 'undertone.server 'start_link '())
-           ,(child 'undertone.xtrepl 'start_link '())
-           ;; XXX do a check here to see if the backend is enabled
-           ,(child 'undertone.extempore 'start_link '())))))
+  (let ((backend (undertone.sysconfig:backend-name)))
+    `#(ok #(,(sup-flags)
+            ,(lists:append
+              ;; Always start the main server
+              (list (child 'undertone.server 'start_link '()))
+              (cond
+               ;; Extempore-specific children
+               ((== backend 'extempore)
+                (list (child 'undertone.xtrepl 'start_link '())
+                      (child 'undertone.extempore 'start_link '())))
+               ;; Bevin-specific children
+               ((== backend 'bevin)
+                (list (child 'undertone.bevin 'start_link '())))
+               ;; XXX add one for SuperCollider
+               ;; Default: no children
+               ('true '())))))))
 
 ;;;;;::=---------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   private functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
