@@ -14,7 +14,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun xmit-delim () "\r\n")
-(defun rcv-delim () #"0")
+(defun rcv-delim () #b(0))
 
 (defun async (str)
   (log-debug "Casting: ~s" `(,str))
@@ -46,6 +46,8 @@
    (log-debug "Calling reporter for data: ~p" `(,packet))
    (let* ((raw-msgs (split-xt-packet packet))
           (msgs (maybe-one-msg raw-msgs)))
+     (log-debug "Raw messages: ~p" `(,raw-msgs))
+     (log-debug "Messages: ~p" `(,msgs))
      (list-comp
        ((<- x raw-msgs))
        (apply reporter-mod reporter-func `(,x)))
