@@ -14,6 +14,9 @@
     (handle_info 2)
     (terminate 2)
     (code_change 3))
+  ;; general
+  (export
+   (version 0))
   ;; health API
   (export
    (recv-responsive? 0)
@@ -24,6 +27,9 @@
    (send-port-alive? 0)
    (healthy? 0)
    (status 0))
+  ;; MIDI API
+  (export
+   (write-midi 1))
   ;; debug API
   (export
     (pid 0)
@@ -35,17 +41,22 @@
 (defun SERVER () (MODULE))
 
 (defun initial-state ()
-  (let* ((opts (list "--"))
-         (backend (undertone.sysconfig:backend))
+  (let* ((backend (undertone.sysconfig:backend))
+         (recv-name (mref backend 'recv-binary))
+         (send-name (mref backend 'send-binary))
          (root-dir (mref backend 'root-dir)))
     `#m(backend ,backend
-        args opts
-        recv #m(binary ,(++ root-dir (mref backend 'recv-binary))
+        args ,(list "--")
+        recv #m(name ,recv-name
+                binary ,(++ root-dir recv-name)
                 os-pid undefined
-                os-pid-str undefined)
-        send #m(binary ,(++ root-dir (mref backend 'send-binary))
+                os-pid-str undefined
+                version undefined)
+        send #m(name ,send-name
+                binary ,(++ root-dir send-name)
                 os-pid undefined
-                os-pid-str undefined))))
+                os-pid-str undefined
+                version undefined))))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -76,10 +87,20 @@
   `#(ok ,(maps:merge state (start-bevin state))))
 
 (defun handle_cast
-  ((_msg state)
+  ;; MIDI
+  ((`#(midi-write ,data) (= `#m(send ,send) state))
+   (erlang:port_command (mref send 'port) (list data "\n"))
+   `#(noreply ,state))
+  ;; Fall-through
+  ((msg state)
+   (log-debug "Unknown cast message: ~p" `(,msg))
    `#(noreply ,state)))
 
 (defun handle_call
+  ;; General
+  ((`#(version) _from (= `#m(recv ,recv send ,send) state))
+   `#(reply #m(,(mref recv 'name) ,(mref recv 'version)
+               ,(mref send 'name) ,(mref send 'version)) ,state))
   ;; Health
   ((`#(status bevin) _from (= `#m(tcp-port ,port) state))
    `#(reply not-implemented ,state))
@@ -104,8 +125,8 @@
   ((`#(echo ,msg) _from state)
    `#(reply ,msg ,state))
   ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+  ((msg _from state)
+   `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
 
 (defun handle_info
   ;; Extract MIDI data from packed bits
@@ -160,10 +181,12 @@
    `#(noreply ,state)))
 
 (defun terminate
-  ((_reason `#m(port ,port os-pid-str ,os-pid))
+  ((_reason `#m(send ,send recv ,recv))
    (log-notice "Terminating the 'Bevin' backend server ...")
-   (catch (erlang:port_close port))
-   (catch (stop-os-process os-pid))
+   (catch (erlang:port_close (mref recv 'port)))
+   (catch (erlang:port_close (mref send 'port)))
+   (catch (stop-os-process (mref recv 'os-pid)))
+   (catch (stop-os-process (mref send 'os-pid)))
    'ok))
 
 (defun code_change (_old-version state _extra)
@@ -174,11 +197,12 @@
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start-bevin
-  ((`#m(recv ,recv-state send ,send-state args ,args))
-   `#m(recv ,(start-port recv-state args)
-       send ,(start-port send-state args))))
+  ((`#m(recv ,recv send ,send args ,args))
+   `#m(recv ,(start-port recv args)
+       send ,(start-port send args))))
 
 (defun spawn-executable (bin args)
+  (log-debug "Starting recv port for ~s with args ~p" `(,bin args))
   (let* ((port (erlang:open_port `#(spawn_executable ,bin)
                                  `(binary
                                    use_stdio
@@ -187,7 +211,8 @@
                                    #(args ,args))))
          (port-info (erlang:port_info port))
          (os-pid (proplists:get_value 'os_pid port-info)))
-    `#m(port ,port
+    `#m(version ,(extract-version bin)
+        port ,port
         port-info ,port-info
         os-pid ,os-pid
         os-pid-str ,(integer_to_list os-pid))))
@@ -196,8 +221,12 @@
   (((= `#m(binary ,bin) port-state) args)
    (maps:merge port-state (spawn-executable bin args))))
 
-(defun stop-os-process (pid-str)
-  (os:cmd (++ "kill " pid-str)))
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   general API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun version ()
+  (gen_server:call (SERVER) #(version)))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   health API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,6 +256,13 @@
 
 (defun status ()
   (gen_server:call (SERVER) #(status all)))
+
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   MIDI API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun write-midi (data)
+  (gen_server:cast (SERVER) `#(midi-write ,data)))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -265,6 +301,20 @@
 
 (defun sanitize-msg (msg)
   msg)
+
+(defun extract-version (bin)
+  "Extract the version number from the output, returned as binary."
+  (let (((list _bin version _url) (clj:-> bin
+                                          (++ " --version")
+                                          (os:cmd)
+                                          (string:trim)
+                                          (re:split "[\n ]"))))
+    version))
+
+;; XXX this is used here and in the extempore module; let's move it somewhere
+;;     generally useful
+(defun stop-os-process (pid-str)
+  (os:cmd (++ "kill -9 " pid-str)))
 
 ;;; scratch
 
