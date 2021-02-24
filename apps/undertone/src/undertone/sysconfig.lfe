@@ -4,12 +4,12 @@
 (defmodule undertone.sysconfig
   (export
    (backend 0)
-   (backend-name 0)
-   (backend-display 0)
-   (backend-display-version 0)
-   (backend-version 0)
+   (backend-name 1)
+   (backend-display 1)
+   (backend-display-version 1)
+   (backend-version 1)
    (banner-file 0)
-   (banner 0)
+   (banner 1)
    (config 1)
    (history 0)
    (priv-file 1)
@@ -21,7 +21,7 @@
    (version+name 1)
    (version-arch 0)
    (version-system 0)
-   (versions 0)
+   (versions 1)
    (versions-deps 0)
    (versions-langs 0)
    (versions-rebar 0)))
@@ -38,17 +38,18 @@
           'name
           name)))
 
-(defun backend-name ()
-  (mref (backend) 'name))
+(defun backend-name (bkend)
+  (mref bkend 'name))
 
-(defun backend-display ()
-  (mref (backend) 'display-name))
+(defun backend-display (bkend)
+  (mref bkend 'display-name))
 
-(defun backend-display-version ()
-  (++ (backend-display) " " (backend-version)))
+(defun backend-display-version (bkend)
+  (++ (backend-display bkend) " " (backend-version bkend)))
 
-(defun backend-version ()
-  (mref (backend) 'version))
+;; XXX delete this, and make versions something that that a backend's server state returns
+(defun backend-version (bkend)
+  (mref bkend 'version))
 
 (defun banner-file ()
   (config 'banner))
@@ -56,7 +57,7 @@
 ;Docs: \e[1;34mhttps://cnbbooks.github.io/lfe-music-programming/current/ \e[0m
 ;File bug report: \e[1;34mhttps://github.com/lfex/undertone/issues/new \e[0m
 
-(defun banner ()
+(defun banner (bkend)
   "Colour sequence:
    - A series of blues for the mushroom and spores
    - The yellow 'welcome'
@@ -81,6 +82,9 @@
         (lgrey "\e[37m")
         (grey "\e[1;30m")
         (end "\e[0m"))
+    ;; XXX using VERSION below (for latter replace) is a hack; should we
+    ;;     instead return this whole thing as a format template, with ~s
+    ;;     instead of VERSION?
     (io_lib:format data `(,lcyan ,end
                           ,blue  ,end
                           ,lcyan ,end
@@ -147,7 +151,7 @@
                           ,lgrey ,end
                           ,grey  ,end
                           ,(++ lyellow (version 'undertone) end)
-                          ,(++ yellow (backend-display-version) end)
+                          ,(++ yellow "VERSION" end)
                           ,(++ "Docs: "
                                lblue
                                "https://cnbbooks.github.io/lfe-music-programming/"
@@ -231,17 +235,17 @@
 (defun version-arch ()
   `#(architecture ,(erlang:system_info 'system_architecture)))
 
-(defun version-backend ()
-  `#(backend ,(backend-display-version)))
+(defun version-backend (bkend)
+  `#(backend ,(backend-display-version bkend)))
 
 (defun version-system ()
   (string:replace (erlang:system_info 'system_version)
                   "Erlang/OTP"
                   "LFE/OTP"))
 
-(defun versions ()
+(defun versions (bkend)
   (lists:append `((,(version-undertone)
-                   ,(version-backend))
+                   ,(version-backend bkend))
                   ,(versions-deps)
                   ,(versions-langs)
                   ,(versions-rebar)

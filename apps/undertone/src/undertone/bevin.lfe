@@ -11,11 +11,13 @@
     (init 1)
     (handle_call 3)
     (handle_cast 2)
+    (handle_continue 2)
     (handle_info 2)
     (terminate 2)
     (code_change 3))
   ;; general
   (export
+   (display-version 0)
    (version 0))
   ;; health API
   (export
@@ -47,6 +49,7 @@
          (root-dir (mref backend 'root-dir)))
     `#m(backend ,backend
         args ,(list "--")
+        banner ,(undertone.sysconfig:banner backend)
         recv #m(name ,recv-name
                 binary ,(++ root-dir recv-name)
                 os-pid undefined
@@ -61,6 +64,8 @@
 (defun genserver-opts () '())
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
+(defun unknown-continue (data)
+  `#(error ,(lists:flatten (++ "Unknown continue: " data))))
 (defun unknown-info (data)
   `#(error ,(lists:flatten (++ "Unknown info: " data))))
 
@@ -84,7 +89,8 @@
 
 (defun init (state)
   (erlang:process_flag 'trap_exit 'true)
-  `#(ok ,(maps:merge state (start-bevin state))))
+  `#(ok ,(maps:merge state (start-bevin state))
+        #(continue #(post-init))))
 
 (defun handle_cast
   ;; MIDI
@@ -98,9 +104,17 @@
 
 (defun handle_call
   ;; General
+  ((`#(version display) _from (= `#m(recv ,recv send ,send) state))
+   `#(reply ,(io_lib:format "~s ~s / ~s ~s"
+                            (list (mref send 'name)
+                                  (mref send 'version)
+                                  (mref recv 'name)
+                                  (mref recv 'version)))
+            ,state))
   ((`#(version) _from (= `#m(recv ,recv send ,send) state))
    `#(reply #m(,(mref recv 'name) ,(mref recv 'version)
-               ,(mref send 'name) ,(mref send 'version)) ,state))
+               ,(mref send 'name) ,(mref send 'version))
+            ,state))
   ;; Health
   ((`#(status bevin) _from (= `#m(tcp-port ,port) state))
    `#(reply not-implemented ,state))
@@ -127,6 +141,17 @@
   ;; Fall-through
   ((msg _from state)
    `#(reply ,(unknown-command (io_lib:format "~p" `(,msg))) ,state)))
+
+(defun handle_continue
+  ;; Testing / debugging
+  ((`#(post-init) state)
+   ;; Was thinking about rendering the banner here; maybe get rid of if we don't need?
+   (log-debug "Post-initialization tasks ...")
+   `#(noreply ,state))
+  ;; Fall-through
+  ((msg state)
+   (log-debug (unknown-continue (io_lib:format "~p" `(,msg))))
+   `#(noreply ,state)))
 
 (defun handle_info
   ;; Extract MIDI data from packed bits
@@ -225,6 +250,9 @@
 ;;;::=-   general API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun display-version ()
+  (gen_server:call (SERVER) #(version display)))
+
 (defun version ()
   (gen_server:call (SERVER) #(version)))
 
@@ -302,6 +330,7 @@
 (defun sanitize-msg (msg)
   msg)
 
+;; XXX move this into bv module
 (defun extract-version (bin)
   "Extract the version number from the output, returned as binary."
   (let (((list _bin version _url) (clj:-> bin
@@ -317,4 +346,3 @@
   (os:cmd (++ "kill -9 " pid-str)))
 
 ;;; scratch
-

@@ -36,6 +36,7 @@
   (((binary (msg bytes (size 21)) (_ bytes (size 1))) _)
    (when (=:= msg #"Welcome to extempore!"))
    (progn (timer:sleep 500)
+          ;; XXX instead, call a backend-agnostic banner-render function
           (render-banner)))
   ;; Report a successful health check
   (((binary (msg bytes (size 12)) (_ bytes (size 1))) _)
@@ -67,6 +68,7 @@
    ((msgs)
     msgs))
 
+;; XXX remove this backend-specific banner
 (defun render-banner ()
   ;; XXX do a backend check to see which backend is being used, and then call
   ;;     the appropriate REPL server function for getting the banner

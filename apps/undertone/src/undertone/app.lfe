@@ -1,12 +1,13 @@
 (defmodule undertone.app
   (behaviour application)
   ;; app implementation
-  (export  
+  (export
    (start 2)
    (start_phase 3)
    (stop 0))
   ;; start phases
   (export
+   (render-banner 2)
    (start-backend 2)
    (start-backend-client 2)
    (start-osc-clients 2)))
@@ -34,7 +35,7 @@
 (defun start_phase(phase type args)
   (call (MODULE) phase type args)
   'ok)
-      
+
 (defun start-backend (type args)
   (log-info "Starting backend ...")
   (log-debug `#m(msg "Backend start data"
@@ -68,7 +69,7 @@
                    cfg ,cfg))
     (start-backend-client type args cfg)))
 
-(defun start-backend-client 
+(defun start-backend-client
   ((_type _args `#m(has-client? ,has-client?)) (when (not has-client?))
    (log-info "there is no client for the given backend; skipping ...")
    'ok)
@@ -89,4 +90,12 @@
   (log-debug `#m(msg "OSC client start data"
                  type ,type
                  args ,args))
+  'ok)
+
+(defun render-banner (type args)
+  (log-debug "Rendering banner ...")
+  (timer:apply_after 500
+                     'undertone.server
+                     'render-banner
+                     '())
   'ok)

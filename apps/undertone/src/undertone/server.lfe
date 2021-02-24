@@ -20,6 +20,9 @@
   ;; metadata API
   (export
    (versions 0))
+  ;; misc API
+  (export
+   (render-banner 0))
   ;; debug API
   (export
    (pid 0)
@@ -33,12 +36,14 @@
 
 (defun SERVER () (MODULE))
 (defun initial-state ()
-  `#m(backend ,(undertone.sysconfig:backend)
+  (let ((bkend (undertone.sysconfig:backend)))
+  `#m(backend ,bkend
+      banner ,(undertone.sysconfig:banner bkend)
       current-repl undefined
-      version #m(all ,(undertone.sysconfig:versions)
-                 backend-display ,(undertone.sysconfig:backend-display-version)
+      version #m(all ,(undertone.sysconfig:versions bkend)
+                 backend-display ,(undertone.sysconfig:backend-display-version bkend)
                  system ,(undertone.sysconfig:version-system)
-                 undertone ,(undertone.sysconfig:version 'undertone))))
+                 undertone ,(undertone.sysconfig:version 'undertone)))))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -66,6 +71,11 @@
   `#(ok ,state))
 
 (defun handle_cast
+  ;; Misc support
+  ((`#(banner) (= `#m(backend ,back banner ,bnr version ,ver) state))
+     (io:format "~s" `(,(string:replace bnr "VERSION" (-display-version back ver))))
+   `#(noreply ,state))
+  ;; Session-related
   ((`#(repl set ,repl-id) state)
    `#(noreply ,(mset state 'current-repl repl-id)))
   ((_msg state)
@@ -75,8 +85,8 @@
   ;; Backend support
   ((`#(backend display-name) _from (= `#m(backend ,back) state))
    `#(reply ,(mref back 'display-name) ,state))
-  ((`#(backend display-version) _from (= `#m(version ,ver) state))
-   `#(reply ,(mref ver 'backend-display) ,state))
+  ((`#(backend display-version) _from (= `#m(backend ,back version ,ver) state))
+     `#(reply ,(-display-version back ver) ,state))
   ((`#(backend name) _from (= `#m(backend ,back) state))
    `#(reply ,(mref back 'name) ,state))
   ;; Metadata support
@@ -128,6 +138,13 @@
 (defun versions ()
   (gen_server:call (SERVER) `#(version all)))
 
+;;;;;::=----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   misc API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun render-banner ()
+  (gen_server:cast (SERVER) `#(banner)))
+
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -137,3 +154,14 @@
 
 (defun echo (msg)
   (gen_server:call (SERVER) `#(echo ,msg)))
+
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   utility functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun -display-version (back ver)
+  (let* ((name (mref back 'name))
+         (vsn (cond ((== name 'bevin) (undertone.bevin:display-version))
+                    ((== name 'extempore) (mref ver 'backend-display))
+                    ('true "NA"))))
+    (lists:flatten vsn)))

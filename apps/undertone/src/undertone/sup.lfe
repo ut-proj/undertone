@@ -35,7 +35,8 @@
 
 (defun init (_args)
   (log-info "Initializing children ...")
-  (let ((backend (undertone.sysconfig:backend-name)))
+  (let* ((bkend (undertone.sysconfig:backend))
+         (backend (undertone.sysconfig:backend-name bkend)))
     `#(ok #(,(sup-flags)
             ,(lists:append
               ;; Always start the main server

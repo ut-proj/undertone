@@ -12,7 +12,8 @@
     {start_phases,  [
         {'start-backend', []},
         {'start-backend-client', []},
-        {'start-osc-clients', []}
+        {'start-osc-clients', []},
+        {'render-banner', []}
     ]},
     {licenses, ["Apache 2.0"]},
     {links, []}
