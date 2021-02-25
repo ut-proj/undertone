@@ -53,12 +53,10 @@
         recv #m(name ,recv-name
                 binary ,(++ root-dir recv-name)
                 os-pid undefined
-                os-pid-str undefined
                 version undefined)
         send #m(name ,send-name
                 binary ,(++ root-dir send-name)
                 os-pid undefined
-                os-pid-str undefined
                 version undefined))))
 
 (defun genserver-opts () '())
@@ -95,7 +93,7 @@
 (defun handle_cast
   ;; MIDI
   ((`#(midi-write ,data) (= `#m(send ,send) state))
-   (erlang:port_command (mref send 'port) (list data "\n"))
+   (exec:send (mref send 'os-pid) (list data "\n"))
    `#(noreply ,state))
   ;; Fall-through
   ((msg state)
@@ -118,18 +116,12 @@
   ;; Health
   ((`#(status bevin) _from (= `#m(tcp-port ,port) state))
    `#(reply not-implemented ,state))
-  ((`#(status os-process) _from (= `#m(os-pid-str ,os-pid) state))
-   `#(reply ,(has-str? (ps-pid os-pid) os-pid) ,state))
-  ((`#(status port) _from (= `#m(port ,port) state))
-   `#(reply ,(erlang:is_port port) ,state))
-  ((`#(status all) _from state)
+  ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
+   `#(reply ,(process-alive? os-pid) ,state))
+  ((`#(status all) _from  (= `#m(recv ,recv send ,send) state))
    `#(reply
-      `#m(recv-port-alive? ,(recv-port-alive?)
-          recv-os-process-alive? ,(recv-os-process-alive?)
-          recv ,(recv-responsive?)
-          send-port-alive? ,(send-port-alive?)
-          send-os-process-alive? ,(send-os-process-alive?)
-          send ,(send-responsive?))
+      #m(recv-alive? ,(process-alive? (mref recv 'os-pid))
+         send-alive? ,(process-alive? (mref send 'os-pid)))
       ,state))
   ;; Stop
   (('stop _from state)
@@ -208,10 +200,8 @@
 (defun terminate
   ((_reason `#m(send ,send recv ,recv))
    (log-notice "Terminating the 'Bevin' backend server ...")
-   (catch (erlang:port_close (mref recv 'port)))
-   (catch (erlang:port_close (mref send 'port)))
-   (catch (stop-os-process (mref recv 'os-pid)))
-   (catch (stop-os-process (mref send 'os-pid)))
+   (catch (exec:stop (mref recv 'os-pid)))
+   (catch (exec:stop (mref send 'os-pid)))
    'ok))
 
 (defun code_change (_old-version state _extra)
@@ -223,26 +213,19 @@
 
 (defun start-bevin
   ((`#m(recv ,recv send ,send args ,args))
-   `#m(recv ,(start-port recv args)
-       send ,(start-port send args))))
+   `#m(recv ,(start-bin recv args)
+       send ,(start-bin send args))))
 
 (defun spawn-executable (bin args)
-  (log-debug "Starting recv port for ~s with args ~p" `(,bin args))
-  (let* ((port (erlang:open_port `#(spawn_executable ,bin)
-                                 `(binary
-                                   use_stdio
-                                   exit_status
-                                   #(line 1024)
-                                   #(args ,args))))
-         (port-info (erlang:port_info port))
-         (os-pid (proplists:get_value 'os_pid port-info)))
+  (log-debug "Starting port for ~s with args ~p" (list bin args))
+  (let* ((executable (string:join (lists:append (list bin) args) " "))
+         (_ (log-debug "Executable: ~p" `(,executable)))
+         (`#(ok ,pid ,os-pid) (exec:run_link executable '(stdin stdout monitor))))
     `#m(version ,(extract-version bin)
-        port ,port
-        port-info ,port-info
-        os-pid ,os-pid
-        os-pid-str ,(integer_to_list os-pid))))
+        pid ,pid
+        os-pid ,os-pid)))
 
-(defun start-port
+(defun start-bin
   (((= `#m(binary ,bin) port-state) args)
    (maps:merge port-state (spawn-executable bin args))))
 
@@ -310,6 +293,9 @@
   (case (string:find string pattern)
     ('nomatch 'false)
     (_ 'true)))
+
+(defun process-alive? (os-pid)
+  (has-str? (ps-pid os-pid) (integer_to_list os-pid)))
 
 (defun ps-pid (pid)
   (os:cmd (++ "ps -o pid -p" pid)))
