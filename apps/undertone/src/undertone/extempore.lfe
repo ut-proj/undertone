@@ -17,7 +17,6 @@
    (extempore-responsive? 0)
    (healthy? 0)
    (os-process-alive? 0)
-   (port-alive? 0)
    (status 0))
   ;; debug API
   (export
@@ -41,10 +40,8 @@
         args ,(lists:append
                (server-options->strings opts)
                (list (++ "--sharedir=" root-dir)))
-        port undefined
-        port-info undefined
-        os-pid undefined
-        os-pid-str undefined)))
+        pid undefined
+        os-pid undefined)))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -82,15 +79,12 @@
   ;; Health
   ((`#(status extempore) _from (= `#m(tcp-port ,port) state))
    `#(reply not-implemented ,state))
-  ((`#(status os-process) _from (= `#m(os-pid-str ,os-pid) state))
-   `#(reply ,(has-str? (ps-pid os-pid) os-pid) ,state))
-  ((`#(status port) _from (= `#m(port ,port) state))
-   `#(reply ,(erlang:is_port port) ,state))
-  ((`#(status all) _from state)
+  ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
+   `#(reply ,(ut.os:ps-alive? os-pid) ,state))
+  ((`#(status all) _from  (= `#m(recv ,recv send ,send) state))
    `#(reply
-      `#m(port-alive? ,(port-alive?)
-          os-process-alive? ,(os-process-alive?)
-          extempore ,(extempore-responsive?))
+      #m(recv-alive? ,(ut.os:ps-alive? (mref recv 'os-pid))
+         send-alive? ,(ut.os:ps-alive? (mref send 'os-pid)))
       ,state))
   ;; Stop
   (('stop _from state)
@@ -124,6 +118,11 @@
      ;;     see: https://github.com/ut-proj/undertone/issues/64
      (log-notice unpacked)
      `#(noreply ,state)))
+  ;; Standard-output messages
+  ((`#(stdout ,_pid ,msg) state)
+   ;;(log-info "Message from Extempore process (~p): ~s" `(,pid ,(sanitize-extempore-msg msg)))
+   (log-info "Extempore: ~s" `(,(sanitize-extempore-msg msg)))
+   `#(noreply ,state))
   ;; Port EOL-based messages
   ((`#(,port #(data #(eol ,msg))) state) (when (is_port port))
    (log-info (sanitize-extempore-msg msg))
@@ -155,10 +154,9 @@
    `#(noreply ,state)))
 
 (defun terminate
-  ((_reason `#m(port ,port os-pid-str ,os-pid))
+  ((_reason `#m(os-pid ,os-pid))
    (log-notice "Terminating Extempore server ...")
-   (catch (erlang:port_close port))
-   (catch (stop-os-process os-pid))
+   (catch (exec:stop os-pid))
    'ok))
 
 (defun code_change (_old-version state _extra)
@@ -170,21 +168,7 @@
 
 (defun start-extempore
   (((= `#m(args ,args binary ,bin) state))
-   (let* ((port (erlang:open_port `#(spawn_executable ,bin)
-                                  `(binary
-                                    use_stdio
-                                    exit_status
-                                    #(line 1024)
-                                    #(args ,args))))
-          (port-info (erlang:port_info port))
-          (os-pid (proplists:get_value 'os_pid port-info)))
-     `#m(port ,port
-              port-info ,port-info
-              os-pid ,os-pid
-              os-pid-str ,(integer_to_list os-pid)))))
-
-(defun stop-os-process (pid-str)
-  (os:cmd (++ "kill " pid-str)))
+   (maps:merge state (ut.os:run bin args))))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   health API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,9 +183,6 @@
 
 (defun os-process-alive? ()
   (gen_server:call (SERVER) #(status os-process)))
-
-(defun port-alive? ()
-  (gen_server:call (SERVER) #(status port)))
 
 (defun status ()
   (gen_server:call (SERVER) #(status all)))
@@ -220,18 +201,11 @@
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun has-str? (string pattern)
-  (case (string:find string pattern)
-    ('nomatch 'false)
-    (_ 'true)))
-
-(defun ps-pid (pid)
-  (os:cmd (++ "ps -o pid -p" pid)))
-
 (defun sanitize-extempore-msg (msg)
+  ;;(log-debug "Binary message: ~p" `(,msg))
   (clj:-> msg
           (binary_to_list)
-          (string:replace (++ "\\" "\n") "\n")
+          (string:replace "\\" "")
           (string:trim)))
 
 (defun midi-hash->map (hash)
@@ -246,29 +220,3 @@
         note ,(lookup-midi pitch)
         velocity ,velocity
         time ,time)))
-
-;;; scratch
-
-;; /opt/extempore/0.8.7/extempore --term=ansi --sharedir=/opt/extempore/0.8.7
-
-;(include-lib "undertone/include/xt/options.lfe")
-;(set opts (server-options))
-;(set args (lists:append
-;           (server-options->strings opts)
-;           (list "--sharedir=/opt/extempore/0.8.7")))
-;(set port (erlang:open_port #(spawn_executable "/opt/extempore/0.8.7/extempore")
-;                            `(use_stdio
-;                              exit_status
-;                              #(line 1024)
-;                              #(args ,args))))
-
-;(set port (erlang:open_port #(spawn_executable "/opt/extempore/0.8.7/extempore")
-;                            `(use_stdio
-;                              exit_status
-;                              stream
-;                              #(args ,args))))
-
-;(set port-info (erlang:port_info port))
-;(set os-pid (proplists:get_value 'os_pid port-info))
-
-;(erlang:port_close port)

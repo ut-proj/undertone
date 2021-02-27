@@ -23,10 +23,8 @@
   (export
    (recv-responsive? 0)
    (recv-os-process-alive? 0)
-   (recv-port-alive? 0)
    (send-responsive? 0)
    (send-os-process-alive? 0)
-   (send-port-alive? 0)
    (healthy? 0)
    (status 0))
   ;; MIDI API
@@ -117,11 +115,11 @@
   ((`#(status bevin) _from (= `#m(tcp-port ,port) state))
    `#(reply not-implemented ,state))
   ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
-   `#(reply ,(process-alive? os-pid) ,state))
+   `#(reply ,(ut.os:ps-alive? os-pid) ,state))
   ((`#(status all) _from  (= `#m(recv ,recv send ,send) state))
    `#(reply
-      #m(recv-alive? ,(process-alive? (mref recv 'os-pid))
-         send-alive? ,(process-alive? (mref send 'os-pid)))
+      #m(recv-alive? ,(ut.os:ps-alive? (mref recv 'os-pid))
+         send-alive? ,(ut.os:ps-alive? (mref send 'os-pid)))
       ,state))
   ;; Stop
   (('stop _from state)
@@ -219,10 +217,9 @@
 (defun start-bin
   (((= `#m(binary ,bin) port-state) args)
    (let* ((data (maps:merge port-state
-                           (undertone.os:spawn bin
-                                               args
-                                               #m(extract-version? true
-                                                  run-opts (stdin stdout monitor)))))
+                           (ut.os:run bin
+                                      args
+                                      #m(extract-version? true))))
           (`(,_ ,version ,_) (re:split (mref data 'raw-version) "[\n ]")))
      (mupd data 'version version))))
 
@@ -246,17 +243,11 @@
 (defun recv-os-process-alive? ()
   (gen_server:call (SERVER) #(status recv-os-process)))
 
-(defun recv-port-alive? ()
-  (gen_server:call (SERVER) #(status recv-port)))
-
 (defun send-responsive? ()
   (gen_server:call (SERVER) #(status send)))
 
 (defun send-os-process-alive? ()
   (gen_server:call (SERVER) #(status send-os-process)))
-
-(defun send-port-alive? ()
-  (gen_server:call (SERVER) #(status send-port)))
 
 (defun healthy? ()
   (let ((vals (maps:values (status))))
@@ -291,12 +282,6 @@
     ('nomatch 'false)
     (_ 'true)))
 
-(defun process-alive? (os-pid)
-  (has-str? (ps-pid os-pid) (integer_to_list os-pid)))
-
-(defun ps-pid (pid)
-  (os:cmd (++ "ps -o pid -p" pid)))
-
 (defun midi-hash->map (hash)
   (let* ((note-state (band hash #b1))
          (channel (band (bsr hash 1) #b1111))
@@ -312,4 +297,3 @@
 
 (defun sanitize-msg (msg)
   msg)
-
