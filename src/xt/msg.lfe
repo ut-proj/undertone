@@ -36,8 +36,7 @@
   (((binary (msg bytes (size 21)) (_ bytes (size 1))) _)
    (when (=:= msg #"Welcome to extempore!"))
    (progn (timer:sleep 500)
-          ;; XXX instead, call a backend-agnostic banner-render function
-          (render-banner)))
+          (undertone.server:render-banner)))
   ;; Report a successful health check
   (((binary (msg bytes (size 12)) (_ bytes (size 1))) _)
    (when (=:= msg #"#(health ok)"))
@@ -67,12 +66,6 @@
     msg)
    ((msgs)
     msgs))
-
-;; XXX remove this backend-specific banner
-(defun render-banner ()
-  ;; XXX do a backend check to see which backend is being used, and then call
-  ;;     the appropriate REPL server function for getting the banner
-  (io:put_chars `(,(undertone.xtrepl:session-banner))))
 
 (defun split-xt-packet (packet)
   (list-comp
