@@ -35,8 +35,10 @@
   ;; Report when Extempore accepts the connections
   (((binary (msg bytes (size 21)) (_ bytes (size 1))) _)
    (when (=:= msg #"Welcome to extempore!"))
-   (progn (timer:sleep 500)
-          (undertone.server:render-banner)))
+   (timer:apply_after 5000
+                      'undertone.server
+                      'render-banner
+                      '()))
   ;; Report a successful health check
   (((binary (msg bytes (size 12)) (_ bytes (size 1))) _)
    (when (=:= msg #"#(health ok)"))
