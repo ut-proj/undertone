@@ -17,7 +17,9 @@
         'xt.pat',
         'sc.backend',
         'ardour.client',
-        'undertone.osc.client'
+        'undertone.os',
+        'undertone.osc.client',
+        'undertone.sexp'
     ]},
     {licenses, ["Apache 2.0"]},
     {links, []}

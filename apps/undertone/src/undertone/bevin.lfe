@@ -216,18 +216,15 @@
    `#m(recv ,(start-bin recv args)
        send ,(start-bin send args))))
 
-(defun spawn-executable (bin args)
-  (log-debug "Starting port for ~s with args ~p" (list bin args))
-  (let* ((executable (string:join (lists:append (list bin) args) " "))
-         (_ (log-debug "Executable: ~p" `(,executable)))
-         (`#(ok ,pid ,os-pid) (exec:run_link executable '(stdin stdout monitor))))
-    `#m(version ,(extract-version bin)
-        pid ,pid
-        os-pid ,os-pid)))
-
 (defun start-bin
   (((= `#m(binary ,bin) port-state) args)
-   (maps:merge port-state (spawn-executable bin args))))
+   (let* ((data (maps:merge port-state
+                           (undertone.os:spawn bin
+                                               args
+                                               #m(extract-version? true
+                                                  run-opts (stdin stdout monitor)))))
+          (`(,_ ,version ,_) (re:split (mref data 'raw-version) "[\n ]")))
+     (mupd data 'version version))))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   general API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -316,19 +313,3 @@
 (defun sanitize-msg (msg)
   msg)
 
-;; XXX move this into bv module
-(defun extract-version (bin)
-  "Extract the version number from the output, returned as binary."
-  (let (((list _bin version _url) (clj:-> bin
-                                          (++ " --version")
-                                          (os:cmd)
-                                          (string:trim)
-                                          (re:split "[\n ]"))))
-    version))
-
-;; XXX this is used here and in the extempore module; let's move it somewhere
-;;     generally useful
-(defun stop-os-process (pid-str)
-  (os:cmd (++ "kill -9 " pid-str)))
-
-;;; scratch
