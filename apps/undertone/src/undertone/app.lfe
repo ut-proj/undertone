@@ -46,6 +46,8 @@
                    cfg ,cfg))
     (start-backend type args cfg)))
 
+;; XXX I think we can get rid of this start phase, now: backends are started as
+;;     part of the supervision tree ...
 (defun start-backend
   ((_type _args (= `#m(manage-binary? ,start?) cfg)) (when (not start?))
    (log-info "undertone is not configured to start backend; skipping ...")
@@ -93,9 +95,15 @@
   'ok)
 
 (defun render-banner (type args)
-  (log-debug "Rendering banner ...")
-  (timer:apply_after 500
-                     'undertone.server
-                     'render-banner
-                     '())
-  'ok)
+  (render-banner type args (undertone.sysconfig:backend)))
+
+(defun render-banner
+  ((type args `#m(banner-render ,render-when))
+   (if (== render-when 'at-start)
+     (progn
+       (log-debug "Rendering banner ...")
+       (timer:apply_after 500
+                          'undertone.server
+                          'render-banner
+                          '())))
+   'ok))
