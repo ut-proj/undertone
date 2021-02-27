@@ -183,8 +183,7 @@
 
 (defun prompt ()
   ;; XXX This needs to be conditional, depending upon which REPL is running ...
-  ;;(config 'prompt))
-  "")
+  (config 'prompt))
 
 (defun read-priv (priv-rel-path)
   (case (file:read_file (priv-file priv-rel-path))

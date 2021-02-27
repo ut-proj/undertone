@@ -175,7 +175,7 @@
    ((== dest-idx current-idx) (ets:lookup (session-table) current-key))
    ('true (session dest-idx (+ current-idx 1) (session-prev current-key)))))
 
-;; XXX remove this in favor of a backend-agnotist banner renderer
+;; XXX remove this in favor of a backend-agnostic banner renderer
 (defun session-banner ()
   (gen_server:call (SERVER) #(session banner)))
 
