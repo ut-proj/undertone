@@ -29,6 +29,11 @@
     ('true #(true loaded))
     ('false #(false already-loaded))))
 
-(defun def (name val)
-  (xt.msg:async
-   (io_lib:format "(define ~p ~s)" `(,name ,val))))
+(defun def
+  ((name val) (when (is_atom name))
+   (def (atom_to_list name) val))
+  ((name val)
+   (xt.msg:async
+    (if (is_list val)
+      (io_lib:format "(define ~s \"~s\")" `(,name ,val))
+      (io_lib:format "(define ~s ~s)" `(,name ,val))))))
