@@ -19,7 +19,7 @@
 ;;;;;::=------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start (type args)
-  (logger:set_application_level 'undertone 'all)
+  (logger:add_handlers 'undertone)
   (log-notice "Starting undertone application ...")
   (log-debug `#m(msg "App start data" type ,type args ,args))
   (undertone.sup:start_link))
