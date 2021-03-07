@@ -19,6 +19,7 @@
         'ardour.client',
         'undertone.os',
         'undertone.osc.client',
+        'undertone.repl.extempore',
         'undertone.sexp'
     ]},
     {licenses, ["Apache 2.0"]},

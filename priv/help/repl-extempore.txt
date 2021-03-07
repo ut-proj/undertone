@@ -3,23 +3,25 @@ The Extempore undertone REPL
 
 Built-in functions:
 
-(call body)   -- make an explicitly blocking call to Extempore, with 'body'
-                 being a valid Extempore expression
-(check-xt)    -- check on the status of Extempore (no response indicates a
-                 health problem, possibly requiring a restart of the 'extempore'
-                 binary)
-(eom)         -- alias for '(term)'
-(exit)        -- alias for '(quit)'
-(h)           -- alias for '(help)'
-(help)        -- display this information
-(load file)   -- read the code in the given file and load in the current
-                 Extempore session
-(quit)        -- quit the Extempore REPL and return to the LFE REPL
-(restart)     -- restart the managed Extempore OS process
-(term)        -- send message-terminating character sequence to force Extempore
-                 end-of-message (useful when troubleshooting)
-(v)           -- alias for '(version)'
-(version)     -- display all the version info for undertone
+(call body)    -- make an explicitly blocking call to Extempore, with 'body'
+                  being a valid Extempore expression
+(check-xt)     -- check on the status of Extempore (no response indicates a
+                  health problem, possibly requiring a restart of the
+                  'extempore' binary)
+(def NAME VAL) -- an alias for Extempore's (define NAME VAL)
+(eom)          -- alias for '(term)'
+(exit)         -- alias for '(quit)'
+(h)            -- alias for '(help)'
+(help)         -- display this information
+(list-midi)    -- list the system MIDI devices available
+(load file)    -- read the code in the given file and load in the current
+                  Extempore session
+(quit)         -- quit the Extempore REPL and return to the LFE REPL
+(restart)      -- restart the managed Extempore OS process
+(term)         -- send message-terminating character sequence to force Extempore
+                  end-of-message (useful when troubleshooting)
+(v)            -- alias for '(version)'
+(version)      -- display all the version info for undertone
 
 Extempore support:
 

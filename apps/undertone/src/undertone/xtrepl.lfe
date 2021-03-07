@@ -23,7 +23,6 @@
   ;; repl-session API
   (export
    (session 1)
-   ;; XXX remove banner support here
    (session-banner 0)
    (session-insert 1)
    (session-list 0)
@@ -51,9 +50,7 @@
         repl ,(undertone.sysconfig:repl)
         session ,(maps:merge
                   (undertone.sysconfig:session)
-                  ;; XXX remove the banner and required merge
-                 `#m(banner #m(file ,(undertone.sysconfig:banner-file)
-                               text ,(undertone.sysconfig:banner bkend)))))))
+                 `#m(banner #m(text "\nWelcome to Extempore!\n\n"))))))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -104,7 +101,6 @@
   ((`#(repl get-prompt) _from (= `#m(current-repl ,cur-repl repl ,repl) state))
    `#(reply ,(clj:get-in repl `(,cur-repl prompt)) ,state))
   ;; Session support
-  ;; XXX remove banner support here
   ((`#(session banner) _from (= `#m(session ,sess) state))
    `#(reply ,(clj:get-in sess '(banner text)) ,state))
   ((`#(session show-max) _from (= `#m(session ,sess) state))
@@ -175,7 +171,6 @@
    ((== dest-idx current-idx) (ets:lookup (session-table) current-key))
    ('true (session dest-idx (+ current-idx 1) (session-prev current-key)))))
 
-;; XXX remove this in favor of a backend-agnostic banner renderer
 (defun session-banner ()
   (gen_server:call (SERVER) #(session banner)))
 
