@@ -23,10 +23,12 @@
      ;; Built-ins
      (`("call" . ,_) (xt-blocking-eval sexp))
      ('("check-xt") 'check-xt)
+     (`("def" ,var ,val) (xt:def var val))
      ('("eom") 'term)
      ('("exit") 'quit)
      ('("h") 'help)
      ('("help") 'help)
+     ('("list-midi") (xt.midi:list-devices))
      (`("load" ,file) `#(load ,file))
      ('("quit") 'quit)
      ('("restart") 'restart)
@@ -98,6 +100,7 @@
 
 (defun loop
   (('quit)
+   (log-info "Leaving the Extempore REPL ...")
    'good-bye)
   ((_)
    (try
@@ -109,7 +112,7 @@
         (loop 'restart))))))
 
 (defun start ()
-  (log-debug "Starting REPL ...")
+  (log-info "Entering the Extempore REPL ...")
   (undertone.xtrepl:set-repl 'extempore)
   (io:format "~s" `(,(undertone.xtrepl:session-banner)))
   (loop 'start))
