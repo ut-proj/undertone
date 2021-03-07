@@ -10,9 +10,11 @@
     {env,[]},
     {modules, [
         'bv',
+        'xt',
         'xt.backend',
         'xt.common',
         'xt.lang',
+        'xt.midi',
         'xt.msg',
         'xt.pat',
         'sc.backend',
