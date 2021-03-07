@@ -13,10 +13,13 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun init ()
+  (xt:sys-load "libs/external/portmidi.xtm")
+  (xt:sys-load "libs/core/pattern-language.xtm")
   (xt.msg:async
    (xt.lang:sexp "pm_initialize")))
 
 (defun list-devices ()
+  (init)
   (xt.msg:sync
    (xt.lang:sexp "pm_print_devices"))
   (xt.msg:sync
