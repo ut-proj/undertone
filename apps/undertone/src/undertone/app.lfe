@@ -8,9 +8,10 @@
   ;; start phases
   (export
    (render-banner 2)
-   (start-backend 2)
    (start-backend-client 2)
-   (start-osc-clients 2)))
+   (start-osc-clients 2)
+   (start-undertone-inets 2)
+   (stop-rebar-inets 2)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -36,30 +37,15 @@
   (call (MODULE) phase type args)
   'ok)
 
-(defun start-backend (type args)
-  (log-info "Starting backend ...")
-  (log-debug `#m(msg "Backend start data"
-                 type ,type
-                 args ,args))
-  (let* ((cfg (undertone.sysconfig:backend)))
-    (log-debug `#m(msg "Backend config data"
-                   cfg ,cfg))
-    (start-backend type args cfg)))
+(defun stop-rebar-inets (_type _args)
+  (log-info "Stopping the inets started by rebar3 ...")
+  (inets:stop)
+  'ok)
 
-;; XXX I think we can get rid of this start phase, now: backends are started as
-;;     part of the supervision tree ...
-(defun start-backend
-  ((_type _args (= `#m(manage-binary? ,start?) cfg)) (when (not start?))
-   (log-info "undertone is not configured to start backend; skipping ...")
-   'ok)
-  ((_type _args (= `#m(manage-binary? ,start?) cfg)) (when (== 'undefined start?))
-   (log-info "undertone is not configured to start backend; skipping ...")
-   'ok)
-  ((_type _args (= `#m(name ,name) cfg))
-   (case name
-     ('extempore (xt.backend:start cfg))
-     ('supercollider (sc.backend:start cfg))
-     (backend #(error (io_lib:format "Unsupported backend: ~p" `(,backend)))))))
+(defun start-undertone-inets (_type _args)
+  (log-info "Restarting inets with undertone config ...")
+  (inets:start)
+  'ok)
 
 (defun start-backend-client (type args)
   (log-info "Starting backend client ...")

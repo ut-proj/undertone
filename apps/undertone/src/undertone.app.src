@@ -5,12 +5,14 @@
     {mod, {application_starter, ['undertone.app', []]}},
     {applications, [
         kernel,
-        stdlib
+        stdlib,
+        inets
     ]},
     {env,[]},
     {modules, []},
     {start_phases,  [
-        {'start-backend', []},
+        {'stop-rebar-inets', []},
+        {'start-undertone-inets', []},
         {'start-backend-client', []},
         {'start-osc-clients', []},
         {'render-banner', []}
