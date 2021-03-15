@@ -55,3 +55,20 @@ body {
 main h1.chord {
     font-size: 1000% !important;
 }
+
+main h2.next-chord {
+    font-size: 400% !important;
+}
+
+div.beat {
+    height: 4rem;
+    font-size: 400% !important;
+}
+
+div.beat div {
+    color: rgba(0, 0, 0, .67);
+}
+
+div.beat.progress {
+    border-radius: 1rem;
+}
