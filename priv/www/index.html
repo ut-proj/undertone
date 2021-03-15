@@ -51,15 +51,56 @@
           <h3 class="float-md-start mb-0">undertone</h3>
           <nav class="nav nav-masthead justify-content-center float-md-end">
             <a class="nav-link active" aria-current="page" href="#">current play</a>
-            <a class="nav-link" href="#">os</a>
-            <a class="nav-link" href="#">lfe node</a>
+            <a class="nav-link" href="#os">os info</a>
+            <a class="nav-link" href="#node-data">node data</a>
           </nav>
         </div>
       </header>
 
       <main class="px-3">
         <h1 class="chord">A#maj9</h1>
-        <p class="lead">(more data soon)</p>
+
+        <p><br/></p>
+        
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+               style="width: 13%" aria-valuenow="13" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+               style="width: 13%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+               style="width: 13%" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+               style="width: 13%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+               style="width: 13%" aria-valuenow="63" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+        <p><br/></p>
+
+        <h2>Tempo: <span id="bpm">108</span> bpm</h2>
+
+        <p><br/></p>
+
+        <div class="table-responsive">
+          <table class="table table-dark table-striped table-sm">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Timing</th>
+                <th>Current Phrase</th>
+                <th>Current Beat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>C#m</td>
+                <td>4/4</td>
+                <td>8 beats</td>
+                <td>Beat 5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </main>
 
       <footer class="mt-auto text-white-50">
@@ -68,7 +109,7 @@
     </div>
 
 
-    
+    <script src="/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   </body>
 </html>
 
