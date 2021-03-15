@@ -72,3 +72,12 @@ div.beat div {
 div.beat.progress {
     border-radius: 1rem;
 }
+
+.inline-svg {
+    display: inline-block;
+    margin-top: -2px;
+}
+
+.svg-wrapper {
+    white-space: nowrap
+}
