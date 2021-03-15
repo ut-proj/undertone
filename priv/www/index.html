@@ -58,7 +58,7 @@
       </header>
 
       <main class="px-3">
-        <h1 class="chord">A#maj9</h1>
+        <h1 class="chord" id="current-chord">X</h1>
 
         <p><br/></p>
         
@@ -77,7 +77,7 @@
         
         <p><br/></p>
 
-        <h2 class="next-chord">Next chord: <span id="next-chord">E</span></h2>
+        <h2 class="next-chord">Next chord: <span id="next-chord">Y</span></h2>
 
         <p><br/></p>
 
@@ -94,11 +94,11 @@
             </thead>
             <tbody>
               <tr>
-                <td>C#m</td>
-                <td>4/4</td>
-                <td>108</td>
-                <td>8 beats</td>
-                <td>Beat 5</td>
+                <td id="key">Z</td>
+                <td id="time-signature">N/N</td>
+                <td><span id="tempo">0</span> bpm</td>
+                <td><span id="total-beats">0</span> beats</td>
+                <td>Beat <span id="current-beat">0</span></td>
               </tr>
             </tbody>
           </table>
@@ -111,7 +111,46 @@
     </div>
 
 
-    <script src="/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/js/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      $( document ).ready(function() {
+
+          function poll() {
+              setInterval(pollRequest, 1000);
+          }
+          function pollRequest(){
+              $.ajax({ 
+                  url: "http://localhost:7080/esi/undertone.web.api:phrase-data",
+                  success: function(data){
+                      if (data['errors'].length != 0) {
+                          data['errors'].forEach(function (item, index) {
+                              console.error(item, index);
+                          });
+                      }
+                      //var result = JSON.parse(data['result']);
+                      var result = data['result'];
+                      $("#current-chord").html(result['current-chord']);
+                      $("#next-chord").html(result['next-chord']);
+                      $("#key").html(result['key']);
+                      $("#time-signature").html(result['time-signature']);
+                      $("#tempo").html(result['tempo']);
+                      $("#total-beats").html(result['total-beats']);
+                      $("#current-beat").html(result['current-beat']);
+                  },
+                  error: function(err) {
+                      console.error(err);
+                  },
+                  type: "get", 
+                  dataType: "json", 
+                  timeout: 15000,
+              });
+          };
+
+          poll();
+          
+      });
+    </script>
   </body>
 </html>
 
