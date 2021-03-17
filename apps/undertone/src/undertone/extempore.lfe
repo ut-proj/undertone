@@ -120,8 +120,13 @@
      `#(noreply ,state)))
   ;; Standard-output messages
   ((`#(stdout ,_pid ,msg) state)
-   ;;(log-info "Message from Extempore process (~p): ~s" `(,pid ,(sanitize-extempore-msg msg)))
-   (log-info "Extempore: ~s" `(,(sanitize-extempore-msg msg)))
+   (let ((msg (string:replace (sanitize-extempore-msg msg) "\"" "")))
+     (log-debug `#m(message ,msg))
+     (case (match-stdout-map msg)
+       (`#(match (() ,map-str)) (case (lfe_io:read_string map-str)
+                                  (`#(ok ,map-data) (handle-stdout-data map-data))
+                                  (err (log-error `#m(error ,err data ,map-str)))))
+       ('nomatch (log-info "Extempore: ~s" `(,msg)))))
    `#(noreply ,state))
   ;; Port EOL-based messages
   ((`#(,port #(data #(eol ,msg))) state) (when (is_port port))
@@ -220,3 +225,19 @@
         note ,(lookup-midi pitch)
         velocity ,velocity
         time ,time)))
+
+(defun stdout-map-regex ()
+  "(^\\\[\\\")*(?<MAP>['`]*#[mM][^\\\"\\\]]+)(\"\])*$")
+
+(defun match-stdout-map (string)
+  (re:run string (stdout-map-regex) '(#(capture 'MAP list))))
+
+(defun handle-stdout-data
+  (((= `#m(type sequence-step
+           data #m(beat ,beat
+                   note ,note
+                   note-duration ,dur)) map-data))
+   (log-notice `#m(data ,map-data))
+   (log-warn "XXX: Save to ETS table!"))
+  ((msg)
+   (log-warn "Unhandled data format: ~p" `(,msg))))
