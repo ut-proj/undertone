@@ -17,6 +17,8 @@
         {'start-osc-clients', []},
         {'render-banner', []}
     ]},
+
+    {pkg_name, "undertone"},
     {licenses, ["Apache 2.0"]},
     {links, []}
 ]}.

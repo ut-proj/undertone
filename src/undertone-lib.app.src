@@ -24,6 +24,10 @@
         'undertone.repl.extempore',
         'undertone.sexp'
     ]},
+
+    {pkg_name, "undertone_lib"},
     {licenses, ["Apache 2.0"]},
-    {links, []}
+    {links, []},
+    {exclude_files, ["priv/images/*", "priv/oscon-2014-theme-song/*",
+                     "priv/xtlang-samples/*", "priv/xt-midi/*"]}
 ]}.
