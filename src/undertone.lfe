@@ -1,6 +1,7 @@
 (defmodule undertone
   (export
-   (quit 0)))
+   (quit 0)
+   (start-xt-repl 0)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -20,3 +21,6 @@
   (timer:sleep 500)
   (log-notice "undertone shutdown complete")
   (init:stop))
+
+(defun start-xt-repl ()
+  (undertone.repl.extempore:start))

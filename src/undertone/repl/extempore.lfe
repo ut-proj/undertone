@@ -31,6 +31,7 @@
      ('("list-midi") (xt.midi:list-devices))
      (`("load" ,file) `#(load ,file))
      ('("quit") 'quit)
+     ('("shutdown") 'shutdown)
      ('("restart") 'restart)
      ('("term") 'term)
      ('("v") 'version)
@@ -80,6 +81,7 @@
     ('help (help))
     (`#(load ,file) (load file))
     ('quit 'ok)
+    ('shutdown 'ok)
     ('restart (progn
                 (log-notice "Restarting the Extempore binary ...")
                 (undertone.extempore:stop)))
@@ -102,6 +104,9 @@
   (('quit)
    (log-info "Leaving the Extempore REPL ...")
    'good-bye)
+  (('shutdown)
+   (log-notice "Shutting down undertone ...")
+   (shutdown))
   ((_)
    (try
      (loop (print (repl-eval (read))))
@@ -162,6 +167,12 @@
 
 (defun rerun (n m)
   (lists:map #'rerun/1 (lists:reverse (lists:seq m n))))
+
+(defun shutdown ()
+  (io:format "Shutting down undertone ...~n")
+  (log-info "Quitting Extempore REPL ...")
+  (undertone.xtrepl:stop)
+  (undertone:quit))
 
 (defun version ()
   (lfe_io:format "~p~n" `(,(undertone.server:versions))))
