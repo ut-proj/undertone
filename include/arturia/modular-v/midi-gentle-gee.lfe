@@ -30,7 +30,7 @@
 (defun vca-1-soft-clip () 85)
 
 (defun wet-level-delay () 91)
-(defun wel-level-chorous () 93)
+(defun wet-level-chorous () 93)
 
 ;;; These are the custom control codes added to the bank selection "Gentle Gee":
 (defun width-osc-123 () 86)
@@ -49,6 +49,7 @@
 (defun rate-right-delay () 108)
 
 (defun chorous-vca-1 () 109)
+
 ;; This function is for display purposes when used in the REPL
 ;; and needs to be the last function in the include file.
 (defun |-- loaded include: arturia/modular-v/midi-gentle-gee --| ()
