@@ -30,13 +30,13 @@ jobs:
     - name: Check rebar3 Version
       run: rebar3 --version
     - name: Compile
-      run: rebar3 compile
+      run: rebar3 compile || rebar3 compile
 #    - name: Xref Checks
 #      run: rebar3 xref
 #    - name: Dialyzer
 #      run: rebar3 dialyzer
     - name: Compile Test Profile
-      run: rebar3 as test compile
+      run: rebar3 as test compile || rebar3 as test compile
     - name: Run Unit Tests
       run: rebar3 as test lfe ltest -tunit
     - name: Run System Tests
